@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="win.simple.dao.ProductDao">
+
+    <select id="exampleList" resultType="win.simple.entity.ExampleEntity">
+        select * from example
+    </select>
+
+    <select id="example" resultType="win.simple.entity.ExampleEntity">
+        select * from example where id = #{id}
+    </select>
+
+    <select id="configureList" resultType="win.simple.entity.VmConfigureEntity">
+        select * from configure where userid = #{userid}
+    </select>
+
+    <select id="configure" resultType="win.simple.entity.VmConfigureEntity">
+        select * from configure where id = #{id}
+    </select>
+
+    <select id="_configure" resultType="win.simple.entity.VmConfigureEntity">
+        select * from configure where vmuuid = #{vmuuid}
+    </select>
+
+    <!--获取指定虚拟机允许创建端口的数量-->
+    <select id="getNatPort" resultType="int">
+        select natport from configure where vmuuid = #{vmuuid}
+    </select>
+
+    <!--设置指定虚拟机允许创建端口的数量-->
+    <update id="setNatPort">
+        update configure set natport = #{natport} where vmuuid = #{vmuuid}
+    </update>
+
+    <insert id="createConfigure">
+        insert into configure(vmuuid, userid, payment, time, createtime, examplename, natport) values (#{vmuuid}, #{userid}, #{payment}, #{time}, #{createtime}, #{examplename}, #{natport})
+    </insert>
+
+    <select id="vmOwner" resultType="int">
+        select userid from configure where vmuuid = #{vmuuid}
+    </select>
+
+</mapper>

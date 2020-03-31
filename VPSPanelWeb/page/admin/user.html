@@ -1,0 +1,104 @@
+<div class="info-frame">
+    <p class="title">用户信息</p>
+    <table class="table table-hover userTable">
+        <thead>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+<script>
+    $('.userTable').bootstrapTable({
+        singleSelect: true,
+        striped: false,
+        method: 'post',
+        dataType: 'json', 
+        contentType: 'application/json;charset=UTF-8',
+        url: apiAddress + 'user/userlist?token=' + tk,
+        data: {token: tk},
+        columns: [{
+            field: 'id',
+            title: 'ID'
+        },{
+            field: 'username',
+            title: '用户名',
+            editable:{
+                type: 'text',
+                title: '修改用户名'
+            }
+        },{
+            field: 'password',
+            title: '密码',
+            editable:{
+                type: 'text',
+                title: '修改密码'
+            }
+        },{
+            field: 'identity',
+            title: '权限',
+            formatter: function (value, row, index) {
+                if(value == 'admin') {
+                    return 2;
+                }
+                if(value == 'member') {
+                    return 1;
+                }
+                return 1;
+            },
+            editable:{
+                type: 'select',
+                title: '修改权限',
+                source:[{value:"1", text:"普通用户"}, {value:"2", text:"管理员"}]
+            }
+        },{
+            field: 'deposit',
+            title: '余额',
+            editable:{
+                type: 'text',
+                title: '修改余额',
+                validate: function (value) { //字段验证
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(!isNumber(value)) {
+                        return '请输入数字或数字与小数点组合的数字！';
+                    }
+                }
+            }
+        }],
+        formatNoMatches: () => {
+            return '没有找到用户';
+        },
+        onEditableSave: function (field, row, oldValue, $el) {
+            if(row.identity == 1) {
+                row.identity = 'member';
+            } else if(row.identity == 2) {
+                row.identity = 'admin';
+            }
+            row.token = tk;
+            $.ajax({
+                type: "post",
+                url: apiAddress + 'user/edit',
+                data: row,
+                dataType: 'JSON',
+                success: function (data) {
+                    console.log(data)
+                },
+                error: function (err) {
+                    console.log(err)
+                },
+                complete: function () {
+
+                }
+            });
+        }
+    });
+
+    function isNumber(value){ 
+        if(!isNaN(value)){ 
+            return true;
+        }else{ 
+            return false;
+        } 
+    } 
+</script>

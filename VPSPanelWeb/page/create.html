@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建新实例</title>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+    <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.js"></script>
+    <script type="text/javascript" src="../js/bootstrap-table.js"></script>
+    <script type="text/javascript" src="../js/function.js"></script>
+    <script>
+        // 获取web信息
+        webinfo();
+
+        var payMode = 1;
+
+        var currExampleName;
+        var currExampleId;
+        var examplelistjson;
+        var buydate;
+        
+
+        $(document).ready(() => {
+            let choice_pay = $('.choice-pay');
+
+            $('.pay-month-btn').click(() => {
+                choice_pay.text('月付费');
+                payMode = 1;
+                $('.dateSelect').html('');
+                for(var i = 1; i <= 12; i++) {
+                    $('.dateSelect').append('<option value="' + i + '">' + i + ' 个月</option>');
+                }
+                calcCost();
+            });
+            $('.pay-year-btn').click(() => {
+                choice_pay.text('年付费');
+                payMode = 2;
+                $('.dateSelect').html('');
+                for(var i = 1; i <= 12; i++) {
+                    $('.dateSelect').append('<option value="' + i + '">' + i + ' 年</option>');
+                }
+                calcCost();
+            });
+
+            $('.example').bootstrapTable({
+                singleSelect: true,
+                striped: false,
+                columns: [{
+                    checkbox: true,
+                    formatter: 'stateFormatter'
+                },{
+                    field: 'specification',
+                    title: '规格名'
+                },{
+                    field: 'vcpu',
+                    title: 'vCPU'
+                },{
+                    field: 'memory',
+                    title: '内存'
+                },{
+                    field: 'processor_model',
+                    title: '处理器型号'
+                },{
+                    field: 'frequency',
+                    title: '处理器主频/睿频'
+                },{
+                    field: 'price',
+                    title: '参考价格'
+                }],
+                onCheck: (row) => {
+                    currExampleName = row.specification;
+                    $('.choice-example').text(currExampleName);
+                    calcCost();
+                },
+                onUncheck: (row) => {
+                    $('.choice-example').text("无");       
+                },
+                formatNoMatches: () => {
+                    return '没有找到资源';
+                }
+            });
+            $('.example').bootstrapTable('hideLoading');
+        });
+
+        // 计算费用
+        function calcCost() {
+            for(let i = 0; i < examplelistjson.length; i++) {
+                if(currExampleName == examplelistjson[i].name) {
+                    currExampleId = examplelistjson[i].id;
+                    buydate = $('.dateSelect').find('option:selected').attr('value');
+                    if(buydate > 0) {
+                        if(payMode == 1) {
+                            $('.price').text('￥' + (examplelistjson[i].price * buydate).toFixed(2));
+                        }
+                        if(payMode == 2) {
+                            $('.price').text('￥' + (examplelistjson[i].price * 12 * buydate).toFixed(2));
+                        }
+                    }
+                    
+                }
+            }
+        }
+
+        function authorization() {
+            let tk = localStorage.getItem('token');
+
+            $.ajax({
+                url: apiAddress + 'user/authorization',
+                type: 'post',
+                data: {token: tk},
+                complete: () => {
+                    loading.hide();
+                },
+                success: (data) => {
+                    let state = data.state;
+                    let datas = data.data;
+                    if(state == 200) {
+                        $('.username').text(data.data.name);
+                        exampleList();
+
+                        if(datas.identity == 'admin') {
+                            $('.adminPage-btn').css({
+                                display: 'block'
+                            });
+                        }
+                    } else {
+                        window.location.href="./login.html";
+                    }
+                }
+            });
+        }
+        
+        function exampleList() {
+            $.ajax({
+                url: apiAddress + 'product/examplelist',
+                type: 'get',
+                success: (data) => {
+                    var state = data.state;
+                    var datas = data.data;
+                    examplelistjson = datas;
+                    if(state == 200) {
+                        for(var i = 0; i < datas.length; i++) {
+                            $(".example").bootstrapTable('insertRow',{index: i,row:{
+                                specification: datas[i].name,
+                                vcpu: datas[i].cpus + ' vCPU',
+                                memory: datas[i].memory + ' MB',
+                                processor_model: datas[i].cputype,
+                                frequency: datas[i].cpuhz,
+                                price: '￥' + datas[i].price + ' / 月'
+                            }});
+                        }
+                    }
+                },
+                error: (data) => {
+                    alert('无法连接至服务器');
+                }
+            });
+        }
+    </script>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            padding-right: 0px !important;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #F5F5F5;
+        }
+        
+        .navigation {
+            width: 100%;
+            height: 50px;
+            background-color: #FFFFFF;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
+        }
+
+        .info-frame {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            padding: 20px;
+            width: 100%;
+            height: fit-content;
+            background-color: #FFFFFF;
+            border-radius: 3px;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+        }
+        .info-frame .title {    
+            font-weight: 600;
+            font-size: 18px; 
+        }
+        .info-frame .pay {
+            margin-bottom: 10px;
+        }
+
+        *.modal-open {
+		    overflow-y: scroll;
+		    padding-right: 0 !important;
+	    }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <span class="glyphicon glyphicon-chevron-left backHome hidden-xs"></span>
+        <div class="container" style="height: 100%; display: flex; align-items: center;">
+            <a href="/"><img src="../image/logo.png" width="120px" height="40px"/></a>
+            <div style="display: inline; margin-left: auto;">
+                <div class="btn-group personal">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                        <span class="username">^_^</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" role="menu">
+                        <li><a href="#">基本资料</a></li>
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/manage.html">后台管理</a></li>
+                        <li class="divider"></li>
+                        <li><a href="javascript:void(logout())">注销</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style type="text/css">
+        .backHome {
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        .backHome:hover {
+            font-size: 20px;
+            color: #2980b9;
+        }
+    </style>
+    <script type="text/javascript">
+        $('.backHome').click(() => {
+            window.location.href="/";
+        });
+    </script>
+
+    <div class="container">
+        <div class="info-frame">
+            <p class="title">付费模式</p>
+            <div class="pay">
+                <button type="button" class="btn btn-success pay-month-btn">按月付费</button>
+                <button type="button" class="btn btn-info pay-year-btn">按年付费</button>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">当前选择的模式</h3>
+                </div>
+                <div class="panel-body choice-pay">
+                    月付费
+                </div>
+            </div>
+        </div>
+
+        <div class="info-frame">
+            <p class="title">实例</p>
+            <p class="visible-xs-block" style="color: #7f8c8d;">可左右滑动表格查看信息</p>
+            <div style="overflow-x: auto;">
+                <table class="table table-hover example" style="min-width:800px;">
+                    <thead>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">当前选择的实例</h3>
+                </div>
+                <div class="panel-body choice-example">
+                    无
+                </div>
+            </div>
+
+        </div>
+
+        <div class="info-frame">
+            <p class="title">配置费用</p>
+            <div class="row">
+                <div class="col-xs-8 col-sm-4 col-md-3">
+                    <div style="margin-top: 10px; margin-bottom: 10px;">
+                        配置费用: <span class="price" style="font-size: 20px; color: #f1c40f;">请选择实例</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">购买时长</span>
+                        <select class="form-control dateSelect" onchange="calcCost()">
+                            <option value="">请选择一个付费模式</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-2 col-sm-offset-7">
+                    <button type="button" class="btn btn-success pull-right buy-btn" >确认订单</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $('.buy-btn').click(() => {
+            if(currExampleId > 0 && buydate > 0) {
+                $('#buyModalLabel').text('创建提示');
+                $('.buy-modal-body').html('你确定要购买该实例吗，购买完成后自动返回控制台首页。<br /><span style="color: #e74c3c;">注意：购买完成后会自动创建服务器，需要等待几分钟</span>');
+                $('#buyModal').modal('show');
+            } else {
+                Modal("创建提示", "付费模式，实例，购买时长都必须要选择，才能购买。");
+            }
+        });
+
+        function buy(paymod, currExampleId, buydate) {
+            $.ajax({
+                url: apiAddress + 'product/buyvm',
+                type: 'post',
+                data: {token: tk, paymod: paymod, exampleId: currExampleId, buydate: buydate},
+                success: (data) => {
+                    var state = data.state;
+                    var datas = data.data;
+                    if(state == 200) {
+                        window.location.href = "/";
+                    }
+                    if(state == 400) {
+                        Modal("创建提示", data.msg);
+                    }
+                    
+                },
+                error: (data) => {
+                    Modal("创建提示", "购买失败，无法连接服务器，请刷新页面后重试！");
+                }
+            });
+        }
+    </script>
+
+    <!-- 普通提示 - 模态框 -->
+    <div class="modal fade ordinary-modal" id="powerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body" id="ordinary-modal-body"> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 购买提示 - 模态框 -->
+    <div class="modal fade" id="buyModal" tabindex="-1" role="dialog" aria-labelledby="buyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="buyModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body buy-modal-body"> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary modal-btn modal-buy-btn">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        // 全屏加载
+        var loading = new KZ_Loading();
+        loading.show();
+
+        $('.modal-buy-btn').click(() => {
+            $('#buyModal').modal('hide');
+            buy(payMode, currExampleId, buydate);
+        });
+    </script>
+</body>
+</html>

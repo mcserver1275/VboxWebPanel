@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="win.simple.dao.UserDao">
+
+    <select id="userList" resultType="win.simple.entity.UserEntity">
+        select * from user;
+    </select>
+
+    <select id="selectUser" resultType="win.simple.entity.UserEntity">
+        select * from user where username = #{username}
+    </select>
+
+    <select id="isExistence" resultType="int">
+        select id from user where username = #{username} and password = #{password}
+    </select>
+
+    <select id="isExistenceTwo" resultType="int">
+        select id from user where username = #{username}
+    </select>
+
+    <insert id="register">
+        insert into user(username, password) values (#{username}, #{password})
+    </insert>
+
+    <update id="setDeposit">
+        update user set deposit = #{deposit} where username = #{username}
+    </update>
+
+    <update id="userEdit" parameterType="win.simple.entity.UserEntity">
+        update user set username = #{username}, password = #{password}, identity = #{identity}, deposit = #{deposit} where id = #{id}
+    </update>
+
+</mapper>

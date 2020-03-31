@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <mvc:annotation-driven />
+    <context:component-scan base-package="win.simple.controller" />
+    <context:component-scan base-package="win.simple.serivce.impl" />
+    <context:component-scan base-package="win.simple.util" />
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:db.properties</value>
+                <value>classpath:redis.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--系统盘克隆检查类，防止克隆的时候重启后端导致克隆到一半，无法开机问题-->
+    <bean class="win.simple.util.InspectStoragectl"></bean>
+
+    <!-- 将静态资源交由默认的servlet处理 -->
+    <mvc:default-servlet-handler/>
+
+    <!-- 将SwaggerConfig配置类注入 -->
+    <bean class="win.simple.config.SwaggerConfig"/>
+    <mvc:resources location="classpath:/META-INF/resources/" mapping="swagger-ui.html"/>
+    <mvc:resources location="classpath:/META-INF/resources/webjars/" mapping="/webjars/**"/>
+
+</beans>

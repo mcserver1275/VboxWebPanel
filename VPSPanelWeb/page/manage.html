@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资源管理</title>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+    <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.js"></script>
+    <script type="text/javascript" src="../js/bootstrap-table.js"></script>
+
+    <script type="text/javascript" src="../js/function.js"></script>
+    <script type="text/javascript" src="../js/vmfunction.js"></script>
+
+    <script type="text/javascript">
+        var uuid = getQueryVariable("uuid");
+        if(!uuid) {
+            window.location.href="/";
+        }
+        // 公网地址
+        var publicip;
+        // 服务地区
+        var serviceregion;
+
+        // 获取web信息
+        webinfo();
+
+        $(document).ready(() => {
+            $('.portMappingTable').bootstrapTable({
+                singleSelect: true,
+                striped: false,
+                columns: [{
+                    field: 'name',
+                    title: '应用名'
+                },{
+                    field: 'agreement',
+                    title: '协议'
+                },{
+                    field: 'intranetPort',
+                    title: '内网端口'
+                },{
+                    field: 'externalPort',
+                    title: '公网端口'
+                },{
+                    field: 'operation',
+                    title: '操作',
+                    formatter: addFuntionAlty,
+                    events: {
+                        'click #portEditor': (e, value, row, index) => {
+                            console.info(row);
+                        },
+                        'click #portDelete': (e, value, row, index) => {
+                            deletePortMapper(row.name);
+                        }
+                    }
+                }],
+                onCheck: (row) => {
+                    $('.choice-example').text(row.specification);
+                },
+                onUncheck: (row) => {
+                    $('.choice-example').text("无");       
+                },
+                formatNoMatches: () => {
+                    return '没有找到端口';
+                }
+            });
+            $('.portMappingTable').bootstrapTable('hideLoading');
+        });
+
+        function addFuntionAlty(value, row, index) {
+            return [
+                '<!--<span id="portEditor" class="glyphicon glyphicon-pencil"></span>-->',
+                '<span id="portDelete" class="glyphicon glyphicon-remove"></span>',
+            ].join('');
+        }
+
+        function authorization() {
+            $.ajax({
+                url: apiAddress + 'user/authorization',
+                type: 'post',
+                dataType: 'json',
+                data: {token: tk},
+                complete: () => {
+                    // 获取端口列表
+                    portMapperList();
+                },
+                success: (data) => {
+                    let state = data.state;
+                    let datas = data.data;
+                    if(state == 200) {
+                        publicip = datas.publicip;
+                        serviceregion = datas.serviceregion;
+                        $('.username').text(data.data.name);
+
+                        if(datas.identity == 'admin') {
+                            $('.adminPage-btn').css({
+                                display: 'block'
+                            });
+                        }
+                    } else {
+                        window.location.href="./login.html";
+                    }
+                }
+            });
+        }
+
+    </script>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #F5F5F5;
+        }
+        
+        .navigation {
+            width: 100%;
+            height: 50px;
+            background-color: #FFFFFF;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
+        }
+
+        .info-frame {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            width: 100%;
+            height: fit-content;
+            background-color: #FFFFFF;
+            border-radius: 3px;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+        }
+        .info-frame .title {    
+            font-weight: 600;
+            font-size: 18px; 
+        }
+        .info-frame .pay {
+            margin-bottom: 10px;
+        }
+        .info-frame span {
+            color:#2d3436;
+        }
+        .info-frame button {
+            margin-left: 5px;
+            margin-right: 5px;
+            max-width: 110px; 
+            width: 100%;
+        }
+        .info-frame .power-btn {
+            margin-left: 5px;
+            margin-right: 5px;
+            color: #F5F5F5;
+        }
+        .info-frame .img-snapshot {
+            width: 100%;
+            max-height: 350px;
+            height: 100%;
+        }
+
+        #portModal .modal-body .input-group {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        #portEditor {
+            margin-right: 20px;
+            color: #3498db;
+        }
+        #portEditor:hover {
+            color: #2980b9;
+        }
+        #portDelete {
+            margin-right: 20px;
+            color: #e74c3c;
+        }
+        #portDelete:hover {
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <span class="glyphicon glyphicon-chevron-left backHome hidden-xs"></span>
+        <div class="container" style="height: 100%; display: flex; align-items: center;">
+            <a href="/"><img src="../image/logo.png" width="120px" height="40px"/></a>
+            <div style="display: inline; margin-left: auto;">
+                <div class="btn-group personal">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                        <span class="username">^_^</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" role="menu">
+                        <li><a href="#">基本资料</a></li>
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/manage.html">后台管理</a></li>
+                        <li class="divider"></li>
+                        <li><a href="javascript:void(logout())">注销</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style type="text/css">
+        .backHome {
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+        .backHome:hover {
+            font-size: 20px;
+            color: #2980b9;
+        }
+    </style>
+    <script type="text/javascript">
+        $('.backHome').click(() => {
+            window.location.href="/";
+        });
+    </script>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-5">
+                <div class="info-frame">
+                    <p class="title">基本信息</p>
+                    <div>
+                        <p class="text-muted">ID：<span class="uuid"></span></p>
+                        <p class="text-muted">运行状态：<span class="vmstate"></span></p>
+                        <p class="text-muted">实例规格：<span class="exampleName"></span></p>
+                        <p class="text-muted">系统类型：
+                            <span class="ostype"></span>
+                            <span class="glyphicon glyphicon-pencil reinstallSystem-btn" title="重装系统" data-toggle="tooltip" data-placement="top" style="margin-left: 10px; color: #3498db; cursor: pointer;"></span>
+                        </p>
+                        <p class="text-muted">区域：<span class="serviceregion"></span></p>
+                        <p class="text-muted">默认用户名：Administrator</span></p>
+                        <p class="text-muted">默认密码：kuyun666.</span></p>
+                    </div>
+                    <script>
+                        $(function () { $("[data-toggle='tooltip']").tooltip(); });
+                    </script>
+                </div>
+                <div class="info-frame">
+                    <p class="title">配置信息</p>
+                    <p class="text-muted">CPU：<span class="cpu"></span></p>
+                    <p class="text-muted">内存：<span class="memory"></span></p>
+                    <p class="text-muted">公网IP：<span class="publicip"></span></p>
+                </div>
+                <div class="info-frame">
+                    <p class="title">付费信息</p>
+                    <p class="text-muted">付费方式：<span class="payment"></span></p>
+                    <p class="text-muted">到期时间：<span class="time"></span></p>
+                    <p class="text-muted">创建时间：<span class="createtime"></span></p>
+                </div>
+            </div>
+            <div class="col-sm-7">
+                <div class="info-frame createProgress-info-frame" style="display: none">
+                    <p class="title">创建进度</p>
+                    <div id="createProgress" class="progress progress-striped active">
+                        <div class="progress-bar progress-bar-success" role="progressbar"
+                             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                             style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="info-frame">
+                    <p class="title">电源操作</p>
+                    <div style="display: flex; justify-content: center;">
+                        <button type="button" class="btn btn-success start-btn" disabled><span class="glyphicon glyphicon-play power-btn"></span>开机</button>
+                        <button type="button" class="btn btn-danger stop-btn" disabled><span class="glyphicon glyphicon-stop power-btn"></span>关机</button>
+                    </div>
+                </div>
+                <div class="info-frame">
+                    <p class="title">快照预览</p>
+                    <div class="">
+                        <img src="../image/zw.png" class="img-thumbnail img-snapshot">
+                    </div>
+                </div>
+                <div class="info-frame">
+                    <p class="title">端口映射</p>
+                    <table class="table table-hover portMappingTable">
+                        <thead>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-default addport">创建新端口</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- 端口映射操作 - 模态框 -->
+    <div class="modal fade" id="portModal" tabindex="-1" role="dialog" aria-labelledby="portModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="portModalLabel">添加新的端口映射</h4>
+                </div>
+                <div class="modal-body"> 
+                    <div class="input-group">
+                        <span class="input-group-addon">应用名</span>
+                        <input type="text" class="form-control portName" placeholder="不能留空">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">映射协议</span>
+                        <select class="form-control agreement">
+                            <option>TCP</option>
+                            <option>UDP</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">内网端口</span>
+                        <input type="text" class="form-control intranetPort" placeholder="不能留空">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">外网端口</span>
+                        <input type="text" class="form-control externalPort" placeholder="不能留空">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary addPortMapper-btn">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $('.addPortMapper-btn').click(() => {
+            let name = $(".portName").val();
+            let agreement = $(".agreement").val();
+            let intranetPort = $(".intranetPort").val();
+            let externalPort = $(".externalPort").val();
+            if(name != "" && agreement != "" && intranetPort != "" & externalPort != "") {
+                if(isRealNum(intranetPort) && isRealNum(externalPort)) {
+                    addPortMapper(name, agreement, intranetPort, externalPort);
+                    $(".portName").val("");
+                    $(".intranetPort").val("");
+                    $(".externalPort").val("");
+                    $('#portModal').modal('hide');
+                } else {
+                    Modal("端口操作提示", "内网端口和外网端口只能是整数");
+                }
+            } else {
+                Modal("端口操作提示", "输入的信息不能为空！");
+            }
+        });
+
+        function isRealNum(val){
+            // isNaN()函数 把空串 空格 以及NUll 按照0来处理 所以先去除
+            if(val === "" || val ==null){
+                return false;
+            }
+            if(!isNaN(val)){
+                return true;
+            }else{
+                return false;
+            }
+        } 
+    </script>
+
+    <!-- 普通提示 - 模态框 -->
+    <div class="modal fade ordinary-modal" id="powerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body" id="ordinary-modal-body"> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 电源操作 - 模态框 -->
+    <div class="modal fade power-modal" id="powerModal" tabindex="-1" role="dialog" aria-labelledby="powerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="powerModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body power-modal-body"> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary modal-btn modal-power-btn" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重装系统 - 模态框 -->
+    <div class="modal fade" id="reinstallSystemModal" tabindex="-1" role="dialog" aria-labelledby="reinstallSystemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="reinstallSystemModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body reinstallSystem-modal-body"> 
+                    <p style="color: #2ecc71;">重装系统需要你等待一段的时间完成</p>
+                    <p style="color: #e74c3c;">警告：如果你的数据放在C盘请备份完在重装，<strong>不然数据丢失不负责！</strong></p>
+                    <div class="input-group">
+                        <span class="input-group-addon">重装系统类型</span>
+                        <select class="form-control agreement reinstallSystem-select">
+                            <option value="0">没有可选的系统</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary modal-btn modal-reinstallSystem-btn" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全屏加载
+        var loading = new KZ_Loading();
+        loading.show();
+    </script>
+
+    <script type="text/javascript">
+        let operationType;
+
+        $('.start-btn').click(() => {
+            operationType = 1;
+            $('#powerModalLabel').text('电源提示');
+            $('.power-modal-body').html('开机需要等待1~2分钟，请稍等！');
+            $('.power-modal').modal('show');
+        });
+        $('.stop-btn').click(() => {
+            operationType = 2;
+            $('#powerModalLabel').text('电源提示');
+            $('.power-modal-body').html('你确定要关闭服务器？<br />这个操作相当于按下主机关闭电源按钮，如果可以连接上服务器建议使用服务器里的关机<span style="color: red;">（可能会造成重要的数据丢失）</span>');
+            $('.power-modal').modal('show'); 
+        });
+
+        // 点击电源模糊框上面的确认按钮事件
+        $('.modal-power-btn').click(() => {
+            power(operationType);
+        });
+        
+        setInterval(() => {
+            // 获取资源信息
+            vminfo(uuid);
+        }, 5000);
+
+        $('.addport').click(() => {
+            $('#portModal').modal('show');
+        });
+
+        // 重装系统事件
+        $('.reinstallSystem-btn').click(() => {
+            osList();
+            $('#reinstallSystemModalLabel').text('重装系统');
+            $('#reinstallSystemModal').modal('show');
+        });
+        $('.modal-reinstallSystem-btn').click(() => {
+            let reinstallSystem_select = $('.reinstallSystem-select');
+            changeOs(reinstallSystem_select.val());
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="win.simple.dao.WebDao">
+
+    <select id="webInfo" resultType="win.simple.entity.WebInfoEntity">
+        select * from websettings where id = 1
+    </select>
+
+    <select id="_webInfo" resultType="win.simple.entity.WebInfoEntity">
+        select webtitle from websettings where id = 1
+    </select>
+
+    <select id="dataPath" resultType="string">
+        select datapath from websettings where id = 1
+    </select>
+
+</mapper>

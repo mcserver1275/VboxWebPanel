@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="win.simple.dao.VmDao">
+
+    <select id="dataPath" resultType="string">
+        select datapath from vmsettings where id = 1
+    </select>
+
+    <select id="publicip" resultType="string">
+        select publicip from vmsettings where id = 1
+    </select>
+
+    <select id="serviceregion" resultType="string">
+        select serviceregion from vmsettings where id = 1
+    </select>
+
+    <select id="portrangemin" resultType="int">
+        select portrangemin from vmsettings where id = 1
+    </select>
+
+    <select id="portrangemax" resultType="int">
+        select portrangemax from vmsettings where id = 1
+    </select>
+
+    <insert id="addOccupyPort">
+        insert into ports(port, userid, portname) values (#{port}, #{userid}, #{portname})
+    </insert>
+
+    <select id="selectOccupyPort" resultType="int">
+        select userid from ports where port = #{port}
+    </select>
+
+    <delete id="deleteOccupyPort">
+        delete from ports where portname = #{portname}
+    </delete>
+
+    <select id="osList" resultType="win.simple.entity.OsEntity">
+        select * from os
+    </select>
+
+    <select id="selectos" resultType="win.simple.entity.OsEntity">
+        select * from os where id = #{id}
+    </select>
+
+</mapper>
