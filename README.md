@@ -29,7 +29,7 @@
 >这样可以防止访问后端地址可以不用输入项目名
 >
 >例如:
->VPSPanel.war > http://localhost:8080/VPSPanel/
+>VPSPanel.war > http://localhost:8080/VPSPanel/ 
 >ROOT.war > http://localhost:8080/
 
 >**啰嗦**
