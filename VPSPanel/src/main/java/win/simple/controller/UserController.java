@@ -73,4 +73,56 @@ public class UserController {
         return service.userEdit(token, entity);
     }
 
+
+    @ApiOperation(value = "账号信息", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "token", value = "令牌", dataType = "String", paramType = "query"),
+    })
+    @RequestMapping(value = "userinfo", method = RequestMethod.POST, produces = "application/json")
+    public StateEntity userInfo(@RequestParam("token") String token) {
+        return service.userInfo(token);
+    }
+
+
+
+    @ApiOperation(value = "使用充值码", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "token", value = "令牌", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "code", value = "充值码", dataType = "String", paramType = "query")
+    })
+    @RequestMapping(value = "userechargecode", method = RequestMethod.POST, produces = "application/json")
+    public StateEntity useRechargeCode(@RequestParam("token") String token, @RequestParam("code") String code) {
+        return service.useRechargeCode(token, code);
+    }
+
+    @ApiOperation(value = "获取充值码列表", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "token", value = "管理员令牌", dataType = "String", paramType = "query")
+    })
+    @RequestMapping(value = "rechargecodelist", method = RequestMethod.POST, produces = "application/json")
+    public StateEntity useRechargeCode(@RequestParam("token") String token) {
+        return service.RechargeCodeInfos(token);
+    }
+
+    @ApiOperation(value = "批量添加随机充值码", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "token", value = "管理员令牌", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "deposit", value = "充值码面值", dataType = "Float", paramType = "query"),
+            @ApiImplicitParam(name = "number", value = "创建的数量", dataType = "Integer", paramType = "query")
+    })
+    @RequestMapping(value = "addrechargecode", method = RequestMethod.POST, produces = "application/json")
+    public StateEntity addRechargeCode(@RequestParam("token") String token, @RequestParam("deposit") float deposit, @RequestParam("number") int number) {
+        return service.addRechargeCode(token, deposit, number);
+    }
+
+    @ApiOperation(value = "移除充值码", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "token", value = "管理员令牌", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "id", value = "充值码ID", dataType = "Integer", paramType = "query")
+    })
+    @RequestMapping(value = "removerechargecode", method = RequestMethod.POST, produces = "application/json")
+    public StateEntity removeRechargeCode(@RequestParam("token") String token, @RequestParam("id") int id) {
+        return service.removeRechargeCode(token, id);
+    }
+
 }

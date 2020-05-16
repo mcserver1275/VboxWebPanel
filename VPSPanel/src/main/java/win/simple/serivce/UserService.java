@@ -9,6 +9,38 @@ public interface UserService {
 
     StateEntity register(String name, String password);
 
+    StateEntity authorization(String token);
+
+    StateEntity userList(String token);
+
+    StateEntity userEdit(String token, UserEntity entity);
+
+    StateEntity userInfo(String token);
+
+    StateEntity useRechargeCode(String token, String code);
+
+    StateEntity RechargeCodeInfos(String token);
+
+    StateEntity removeRechargeCode(String token, int id);
+
+    /**
+     * 自定义充值码
+     * @param token
+     * @param code
+     * @param deposit
+     * @return
+     */
+    StateEntity addRechargeCodeCustom(String token, String code, float deposit);
+
+    /**
+     * 随机生成充值码
+     * @param token
+     * @param deposit
+     * @param number 创建的数量
+     * @return
+     */
+    StateEntity addRechargeCode(String token, float deposit, int number);
+
     /**
      * 通过Token获取用户名
      * @param token
@@ -16,9 +48,13 @@ public interface UserService {
      */
     String tokenUserName(String token);
 
-    StateEntity authorization(String token);
+    UserEntity isUserLogin(String userName);
 
-    StateEntity userList(String token);
+    /**
+     * 判断指定用户名是否为管理员
+     * @param userName
+     * @return
+     */
+    boolean isAdmin(String userName);
 
-    StateEntity userEdit(String token, UserEntity entity);
 }

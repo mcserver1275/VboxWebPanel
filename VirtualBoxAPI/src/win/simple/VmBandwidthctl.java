@@ -10,8 +10,6 @@ import java.util.Arrays;
 
 public class VmBandwidthctl {
 
-    private VBoxRuntime vBoxRuntime;
-
     public VmBandwidthctl() {
     }
 
@@ -33,8 +31,7 @@ public class VmBandwidthctl {
             default:
                 limitType = "network";
         }
-        vBoxRuntime = new VBoxRuntime("VBoxManage bandwidthctl " + name + " add " + groupName + " --type " + limitType + " --limit " + rate + "k");
-        return start();
+        return start("VBoxManage bandwidthctl " + name + " add " + groupName + " --type " + limitType + " --limit " + rate + "k");
     }
 
     /**
@@ -45,8 +42,7 @@ public class VmBandwidthctl {
      * @return
      */
     public String setBandwidthctl(String name, String groupName, long rate) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage bandwidthctl " + name + " set " + groupName + " --limit " + rate + "k");
-        return start();
+        return start("VBoxManage bandwidthctl " + name + " set " + groupName + " --limit " + rate + "k");
     }
 
     /**
@@ -56,8 +52,7 @@ public class VmBandwidthctl {
      * @return
      */
     public String removeBandwidthctl(String name, String groupName) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage bandwidthctl " + name + " remove " + groupName);
-        return start();
+        return start("VBoxManage bandwidthctl " + name + " remove " + groupName);
     }
 
     /**
@@ -66,9 +61,8 @@ public class VmBandwidthctl {
      * @return
      */
     public String listBandwidthctl(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage bandwidthctl " + name + " list");
         JSONObject jsonObject = new JSONObject();
-        String data = start();
+        String data = start("VBoxManage bandwidthctl " + name + " list");
         String[] splitinfo = data.split(", ");
         for(int i = 0; i < splitinfo.length; i++) {
             String[] KV = splitinfo[i].split(": ");
@@ -82,7 +76,8 @@ public class VmBandwidthctl {
     }
 
 
-    private String start() {
+    private String start(String command) {
+        VBoxRuntime vBoxRuntime = new VBoxRuntime(command);
         vBoxRuntime.exec();
         Process process = vBoxRuntime.getProcess();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -1,0 +1,280 @@
+<div class="info-frame">
+    <p class="title">实例管理</p>
+    <div style="overflow-x: auto; margin-bottom: 10px;">
+        <p class="visible-xs-block" style="color: #7f8c8d;">可左右滑动表格查看信息</p>
+        <table class="table table-hover exampleTable" style="min-width: 1200px;">
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    $('.exampleTable').bootstrapTable({
+        singleSelect: true,
+        striped: false,
+        method: 'get',
+        dataType: 'json', 
+        contentType: 'application/json;charset=UTF-8',
+        url: apiAddress + 'product/examplelist',
+        columns: [{
+            field: 'id',
+            title: 'ID'
+        },{
+            field: 'name',
+            title: '商品名',
+            editable:{
+                type: 'text',
+                title: '修改商品名'
+            }
+        },{
+            field: 'cpuexecutioncap',
+            title: 'CPU最大性能',
+            editable:{
+                type: 'text',
+                title: '修改CPU最大性能',
+                validate: function (value) {
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(isInteger(value)) {
+                        if(value <= 0 || value > 100) {
+                            return '请输入1~100之间的整数！';
+                        }
+                    } else {
+                        return '请输入1~100之间的整数！';
+                    }
+                }
+            }
+        },{
+            field: 'cpus',
+            title: 'CPU数量',
+            editable:{
+                type: 'text',
+                title: '修改CPU最大性能',
+                validate: function (value) {
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(!isInteger(value)) {
+                        return '请输入整数！';
+                    }
+                }
+            }
+        },{
+            field: 'cputype',
+            title: 'CPU型号',
+            editable:{
+                type: 'text',
+                title: '修改CPU型号'
+            }
+        },{
+            field: 'cpuhz',
+            title: 'CPU频率',
+            editable:{
+                type: 'text',
+                title: '修改CPU频率'
+            }
+        },{
+            field: 'memory',
+            title: '内存大小(MB)',
+            editable:{
+                type: 'text',
+                title: '修改内存大小(MB)',
+                validate: function (value) {
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(!isInteger(value)) {
+                        return '请输入整数！';
+                    }
+                }
+            }
+        },{
+            field: 'price',
+            title: '产品价格',
+            editable:{
+                type: 'text',
+                title: '修改产品价格',
+                validate: function (value) { //字段验证
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(!isNumber(value)) {
+                        return '请输入数字或数字与小数点组合的数字！';
+                    }
+                }
+            }
+        },{
+            field: 'osid',
+            title: '默认系统ID',
+            editable:{
+                type: 'text',
+                title: '修改默认系统ID',
+                validate: function (value) {
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(!isInteger(value)) {
+                        return '请输入整数！';
+                    }
+                }
+            }
+        },{
+            field: 'defalutnatport',
+            title: '默认端口数量',
+            editable:{
+                type: 'text',
+                title: '修改默认端口数量',
+                validate: function (value) {
+                    if (!$.trim(value)) {
+                        return '不能为空';
+                    }
+                    if(!isInteger(value)) {
+                        return '请输入整数！';
+                    }
+                }
+            }
+        }],
+        formatNoMatches: () => {
+            return '没有找到实例';
+        },
+        onEditableSave: function (field, row, oldValue, $el) {
+            if(row.identity == 1) {
+                row.identity = 'member';
+            } else if(row.identity == 2) {
+                row.identity = 'admin';
+            }
+            row.token = tk;
+            $.ajax({
+                type: "post",
+                url: apiAddress + 'product/resetExample',
+                data: row,
+                dataType: 'JSON',
+                success: function (data) {
+                    console.log(data)
+                },
+                error: function (err) {
+                    console.log(err)
+                },
+                complete: function () {
+
+                }
+            });
+        }
+    });
+
+    function isInteger(obj) {
+        if ((/(^[1-9]\d*$)/.test(obj))) {
+            return true;
+        }
+        return false;
+    }
+
+    function isNumber(value){ 
+        if(!isNaN(value)){ 
+            return true;
+        }else{ 
+            return false;
+        } 
+    }
+</script>
+
+<div class="info-frame">
+    <p class="title">创建新实例</p>
+    <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 10px;">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">实例名</span>
+                        <input type="text" class="form-control example-name" placeholder="不能留空">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">CPU数量</span>
+                        <input type="text" class="form-control example-cpus" placeholder="不能留空">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">CPU最大性能</span>
+                        <input type="text" class="form-control example-cpuexecutioncap" placeholder="不能留空">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">CPU型号</span>
+                        <input type="text" class="form-control example-cputype" placeholder="不能留空">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">CPU频率</span>
+                        <input type="text" class="form-control example-cpuhz" placeholder="不能留空">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">内存(MB)</span>
+                        <input type="text" class="form-control example-memory" placeholder="不能留空">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">默认系统ID</span>
+                        <input type="text" class="form-control example-osid" placeholder="不能留空">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <span class="input-group-addon">默认端口数量</span>
+                        <input type="text" class="form-control example-defalutnatport" placeholder="不能留空">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <span class="input-group-addon">产品价格</span>
+                <input type="text" class="form-control example-price" placeholder="不能留空">
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-default createExample-btn" style="width: 120px;">创建</button>
+    </div>
+</div>
+<script>
+    $('.createExample-btn').click(() => {
+        let name = $('.example-name').val();
+        let cpuexecutioncap = $('.example-cpuexecutioncap').val();
+        let cpus = $('.example-cpus').val();
+        let cputype = $('.example-cputype').val();
+        let memory = $('.example-memory').val();
+        let cpuhz = $('.example-cpuhz').val();
+        let price = $('.example-price').val();
+        let osid = $('.example-osid').val();
+        let defalutnatport = $('.example-defalutnatport').val();
+
+        if(name != "" && cpuexecutioncap != "" && cpus != "" && cputype != "" && memory != "" && cpuhz != "" && price != "" && osid != "" && defalutnatport != "") {
+            alert(cpuexecutioncap);
+        } else {
+            alert('内容不能为空');
+        }
+    });
+</script>
+<style>
+    .info-frame .input-group {
+        margin-bottom: 10px;
+    }
+</style>

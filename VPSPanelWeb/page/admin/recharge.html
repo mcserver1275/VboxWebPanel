@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>充值码管理</title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="../../vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../../vendors/base/vendor.bundle.base.css">
+  <!-- endinject -->
+  <!-- plugin css for this page -->
+  <link rel="stylesheet" href="../../vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <link rel="stylesheet" href="../../css/style.css">
+  <!-- endinject -->
+  <link rel="icon" href="../../image/favicon.svg" type="image/x-icon">
+</head>
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+            <div class="navbar-brand-wrapper d-flex justify-content-center">
+        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">  
+          <a class="navbar-brand brand-logo" href="../../index.html"><img src="../../image/logo.png" alt="logo"/></a>
+          <a class="navbar-brand brand-logo-mini" href="../../index.html"><img src="../../image/logo-mini.svg" alt="logo"/></a>
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="mdi mdi-sort-variant"></span>
+          </button>
+        </div>  
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+              <img src="../../image/user.jpg" alt="profile"/>
+              <span class="nav-profile-name">^_^</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item" href="javascript:void(logout())">
+                <i class="mdi mdi-logout text-primary"></i>
+                注销
+              </a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+          <span class="mdi mdi-menu"></span>
+        </button>
+      </div>
+    </nav>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_sidebar.html -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="mdi mdi-home menu-icon"></i>
+              <span class="menu-title">仪表盘</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="user.html">
+              <i class="mdi mdi-account menu-icon"></i>
+              <span class="menu-title">用户管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="recharge.html">
+              <i class="mdi mdi-currency-usd menu-icon"></i>
+              <span class="menu-title">充值码管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:loadPage('vm.html');">
+              <i class="mdi mdi-server menu-icon"></i>
+              <span class="menu-title">虚拟机管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="example.html">
+              <i class="mdi mdi-shopping menu-icon"></i>
+              <span class="menu-title">实例管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:loadPage('web.html');">
+              <i class="mdi mdi-web menu-icon"></i>
+              <span class="menu-title">网站管理</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">充值码列表</p>
+                  <div class="table-responsive">
+                    <table id="rechargeCodeTable" class="table" style="width:100%">
+                      <thead>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px;">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">创建充值码</p>
+                  <div class="form-group">
+                    <label for="">金额</label>
+                    <input type="text" class="form-control" id="denomination" placeholder="充值码的面值">
+                  </div>
+                  <div class="form-group">
+                    <label for="">数量</label>
+                    <input type="text" class="form-control" id="number" placeholder="需要创建的数量">
+                  </div>
+                  <button type="button" class="btn btn-primary rechargeCode-btn" style="max-width: 120px;">添加充值卡</button>
+                </div>
+
+                <div class="card-body">                 
+                  <blockquote class="blockquote">
+                    <p class="mb-0">创建的充值码是随机的，暂时还不支持手动创建。</p>
+                  </blockquote>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px;">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">使用记录</p>
+                  <div class="table-responsive">
+                    <table id="rechargeCodeUsingTable" class="table" style="width:100%">
+                      <thead>
+                      </thead>
+                      <tbody> 
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <footer class="footer">
+          <div class="d-sm-flex justify-content-center justify-content-sm-between">
+            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright &copy; 2020. <a href="http://kuoer.top/" title="KuoerPanel" target="_blank">KuoerPanel</a></span>
+            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center"></span>
+          </div>
+        </footer>
+      </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+
+  <!-- plugins:js -->
+  <script src="../../vendors/base/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page-->
+  <script src="../../vendors/chart.js/Chart.min.js"></script>
+  <script src="../../vendors/datatables.net/jquery.dataTables.js"></script>
+  <script src="../../vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+  <!-- End plugin js for this page-->
+  <!-- inject:js -->
+  <script src="../../js/off-canvas.js"></script>
+  <script src="../../js/hoverable-collapse.js"></script>
+  <script src="../../js/template.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="../../js/dashboard.js"></script>
+  <script src="../../js/data-table.js"></script>
+  <script src="../../js/jquery.dataTables.js"></script>
+  <script src="../../js/dataTables.bootstrap4.js"></script>
+  <!-- End custom js for this page-->
+  <script type="text/javascript" src="../../js/function.js"></script>
+  <script src="../../js/sweetalert2.min.js"></script>
+  <link rel="stylesheet" href="../../css/sweetalert2.min.css" id="theme-styles">
+
+  <script>
+    webinfo();
+
+    function authorization() {
+      let tk = localStorage.getItem('token')
+      $.ajax({
+        url: apiAddress + 'user/authorization',
+        type: 'post',
+        data: {token: tk},
+        success: (data) => {
+          let state = data.state;
+          let datas = data.data;
+          if(state == 200) {
+            if(datas.identity === 'member') {
+              location.href = '../../index.html';
+            }
+            $('.nav-profile-name').text(datas.name);
+          }
+        }
+      });               
+    }
+
+    var rechargeCodeTable = $('#rechargeCodeTable').DataTable({
+      "columnDefs": [{
+          "data": null,
+          "defaultContent": "<button id='remove' class='btn btn-danger btn-icon-text' type='button'>删除<i class='mdi mdi-window-close btn-icon-append'></i></button>",
+          "targets": 3,
+        }],
+      "ajax": {
+        url: apiAddress + 'user/rechargecodelist',
+        data: {token: tk},
+        type: 'POST'
+      },
+      columns: [{
+          "title": "ID",
+          "name": "id",
+          "data": "id"
+        }, {
+          "title": "充值码",
+          "name": "code",
+          "data": "code"
+        }, {
+          "title": "金额",
+          "name": "deposit",
+          "data": "deposit"
+        }, {
+          "title": "操作",
+          "width": "120px"
+        }
+      ],
+      "bSort": false,  //禁止排序
+      "info": false,   //去掉底部文字
+      "select": true,
+      "language": {
+                "processing": "处理中...",
+                "lengthMenu": "显示 _MENU_ 项结果",
+                "zeroRecords": "没有匹配结果",
+                "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+                "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+                "infoFiltered": "(由 _MAX_ 项结果过滤)",
+                "infoPostFix": "",
+                "search": "搜索:",
+                "searchPlaceholder": "搜索...",
+                "url": "",
+                "emptyTable": "表中数据为空",
+                "loadingRecords": "载入中...",
+                "infoThousands": ",",
+                "paginate": {
+                    "first": "首页",
+                    "previous": "上页",
+                    "next": "下页",
+                    "last": "末页"
+                },
+                "aria": {
+                    paginate: {
+                        first: '首页',
+                        previous: '上页',
+                        next: '下页',
+                        last: '末页'
+                    },
+                    "sortAscending": ": 以升序排列此列",
+                    "sortDescending": ": 以降序排列此列"
+                },
+                "decimal": "-",
+                "thousands": "."
+            }
+    });
+
+    $("#rechargeCodeTable tbody").on("click", "#remove", function () {
+      //获取行
+      var row = $("#rechargeCodeTable tr").index($(this).closest("tr"));
+      //获取某列（从0列开始计数）的值
+      let id = $("#rechargeCodeTable").find("tr").eq(row).find("td").eq(0).text();
+      
+      $.ajax({
+        url: apiAddress + 'user/removerechargecode',
+        type: 'POST',
+        data: {token: tk, id: id},
+        success: (data) => {
+          rechargeCodeTable.ajax.reload();
+          Swal.fire(
+            '成功',
+            '成功移除！',
+            'success'
+          )
+        }
+      });
+
+    });
+
+    // 添加充值码
+    $('.rechargeCode-btn').click(() => {
+      let denomination = $('#denomination').val();
+      let number = $('#number').val();
+
+      if(denomination !== '' && number !== '') {
+        if(!isNumber(denomination)) {
+          Swal.fire(
+            '出错',
+            '请输入数字或数字与小数点组合的数字！',
+            'error'
+          )
+          return;
+        }
+        if(!isNumber(number)) {
+          Swal.fire(
+            '出错',
+            '创建的数量需要输入数字！',
+            'error'
+          )
+          return;
+        }
+        $.ajax({
+          url: apiAddress + 'user/addrechargecode',
+          type: 'POST',
+          data: {token: tk, deposit: denomination, number: number},
+          success: (data) => {
+            rechargeCodeTable.ajax.reload();
+            Swal.fire(
+              '成功',
+              '批量创建充值码成功！',
+              'success'
+            )
+          }
+        });
+      } else {
+        Swal.fire(
+            '出错',
+            '不能为空！',
+            'error'
+          )
+      }
+    });
+
+    function isNumber(value){ 
+        if(!isNaN(value)){ 
+            return true;
+        }else{ 
+            return false;
+        } 
+    }
+  </script>
+  <style>
+    .botton-interval {
+      margin-bottom: 10px;
+    }
+  </style>
+</body>
+</html>
+

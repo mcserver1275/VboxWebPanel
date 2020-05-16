@@ -1,6 +1,5 @@
 package win.simple.serivce.impl;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,8 @@ import win.simple.dao.UserDao;
 import win.simple.dao.VmDao;
 import win.simple.entity.*;
 import win.simple.serivce.UserService;
+import win.simple.util.Tools;
+import win.simple.util.execption.BusinessException;
 
 import java.util.Iterator;
 import java.util.List;
@@ -83,16 +84,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String tokenUserName(String token) {
-        String username = (String) redisTemplate.opsForValue().get(token);
-        if(null != username) {
-            return username;
-        }
-        return null;
-    }
-
-
-    @Override
     public StateEntity authorization(String token) {
         StateEntity stateEntity = new StateEntity();
         String username = tokenUserName(token);
@@ -127,18 +118,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public StateEntity userList(String token) {
         StateEntity stateEntity = new StateEntity();
-        String username = tokenUserName(token);
-        if(null != username) {
-            UserEntity userEntity = userDao.selectUser(username);
-            if(null != userEntity) {
-                if(userEntity.getIdentity().equals("admin")) {
-                    List<UserEntity> userEntityList = userDao.userList();
-                    if(null != userEntityList) {
-                        stateEntity.setState(200);
-                        stateEntity.setMsg("ok");
-                        stateEntity.setData(userEntityList);
-                        return stateEntity;
-                    }
+        UserEntity loginUserEntity = this.isUserLogin(token);
+        if(null != loginUserEntity) {
+            if(this.isAdmin(loginUserEntity.getUsername())) {
+                List<UserEntity> userEntityList = userDao.userList();
+                if(null != userEntityList) {
+                    stateEntity.setState(200);
+                    stateEntity.setMsg("ok");
+                    stateEntity.setData(userEntityList);
+                    return stateEntity;
                 }
             }
         }
@@ -150,18 +138,171 @@ public class UserServiceImpl implements UserService {
     @Override
     public StateEntity userEdit(String token, UserEntity entity) {
         StateEntity stateEntity = new StateEntity();
-        String username = tokenUserName(token);
+        String username = this.tokenUserName(token);
         if(null != username) {
             UserEntity userEntity = userDao.selectUser(username);
             if(null != userEntity) {
                 if(userEntity.getIdentity().equals("admin")) {
                     userDao.userEdit(entity);
+                    stateEntity.setState(200);
+                    stateEntity.setMsg("ok");
+                    return stateEntity;
                 }
             }
         }
         stateEntity.setState(404);
         stateEntity.setMsg("你没有权限执行此操作");
         return stateEntity;
+    }
+
+    @Override
+    public StateEntity userInfo(String token) {
+        StateEntity stateEntity = new StateEntity();
+        stateEntity.setState(404);
+        String username = this.tokenUserName(token);
+        if(null != username) {
+            Integer userId = userDao.isExistenceTwo(username);
+            if(null != userId) {
+                UserEntity userEntity = userDao.selectUser(username);
+                List<VmConfigureEntity> vmConfigureEntityList = productDao.configureList(userId);
+
+                UserInfoEntity userInfoEntity = new UserInfoEntity();
+                userInfoEntity.setDeposit(userEntity.getDeposit());
+                userInfoEntity.setIdentity(userEntity.getIdentity());
+                userInfoEntity.setExamplenumber(vmConfigureEntityList.size());
+
+                stateEntity.setState(200);
+                stateEntity.setData(userInfoEntity);
+                stateEntity.setMsg("ok");
+                return stateEntity;
+            }
+        }
+
+        stateEntity.setMsg("你没有权限执行此操作");
+        return stateEntity;
+    }
+
+    @Override
+    public StateEntity useRechargeCode(String token, String code) {
+        UserEntity loginUserEntity = this.isUserLogin(token);
+        if(null != loginUserEntity) {
+            RechargeCodeEntity rechargeCodeEntity = userDao.rechargeCodeInfo(code);
+            if(null != rechargeCodeEntity && code.equals(rechargeCodeEntity.getCode())) {
+                // 使用充值码
+                String userName = loginUserEntity.getUsername();
+                UserEntity userEntity = userDao.selectUser(userName);
+                userDao.setDeposit(userName, userEntity.getDeposit() + rechargeCodeEntity.getDeposit());
+
+                // 删除充值码
+                userDao.deleteRechargeCode(rechargeCodeEntity.getId());
+
+                StateEntity stateEntity = new StateEntity();
+                stateEntity.setState(200);
+                stateEntity.setMsg("ok");
+                stateEntity.setData("充值成功");
+                return stateEntity;
+            } else {
+                throw new BusinessException("你输入的充值码有误", 403);
+            }
+        }
+        throw new BusinessException("你没有权限执行此操作", 403);
+    }
+
+    @Override
+    public StateEntity RechargeCodeInfos(String token) {
+        UserEntity loginUserEntity = this.isUserLogin(token);
+        if(null != loginUserEntity) {
+            if(this.isAdmin(loginUserEntity.getUsername())) {
+                StateEntity stateEntity = new StateEntity();
+                stateEntity.setState(200);
+                stateEntity.setMsg("ok");
+                stateEntity.setData(userDao.rechargeCodeInfos());
+                return stateEntity;
+            }
+        }
+        throw new BusinessException("你没有权限执行此操作", 403);
+    }
+
+    @Override
+    public StateEntity addRechargeCodeCustom(String token, String code, float deposit) {
+        return null;
+    }
+
+    @Override
+    public StateEntity addRechargeCode(String token, float deposit, int number) {
+        UserEntity loginUserEntity = this.isUserLogin(token);
+        if(null != loginUserEntity) {
+            if(this.isAdmin(loginUserEntity.getUsername())) {
+                for(int i = 0; i < number; i++) {
+                    // 创建长度12位的激活码
+                    String code = Tools.getRandomString(20);
+                    RechargeCodeEntity rechargeCodeEntity = userDao.rechargeCodeInfo(code);
+                    if(null == rechargeCodeEntity) {
+                        userDao.addRechargeCode(code, deposit);
+                    }
+                }
+                StateEntity stateEntity = new StateEntity();
+                stateEntity.setState(200);
+                stateEntity.setMsg("ok");
+                return stateEntity;
+            }
+        }
+        throw new BusinessException("你没有权限执行此操作", 403);
+    }
+
+    @Override
+    public StateEntity removeRechargeCode(String token, int id) {
+        UserEntity loginUserEntity = this.isUserLogin(token);
+        if(null != loginUserEntity) {
+            if(this.isAdmin(loginUserEntity.getUsername())) {
+                StateEntity stateEntity = new StateEntity();
+                if(userDao.deleteRechargeCode(id) != 0) {
+                    stateEntity.setState(200);
+                    stateEntity.setMsg("ok");
+                } else {
+                    stateEntity.setState(404);
+                    stateEntity.setMsg("无法移除该资源");
+                }
+                return stateEntity;
+            }
+        }
+        throw new BusinessException("你没有权限执行此操作", 403);
+    }
+
+
+    @Override
+    public String tokenUserName(String token) {
+        String username = (String) redisTemplate.opsForValue().get(token);
+        if(null != username) {
+            return username;
+        }
+        return null;
+    }
+
+    @Override
+    public UserEntity isUserLogin(String token) {
+        String username = this.tokenUserName(token);
+        if(null != username) {
+            Integer userId = userDao.isExistenceTwo(username);
+            if(null != userId) {
+                UserEntity userEntity = new UserEntity();
+                userEntity.setId(userId);
+                userEntity.setUsername(username);
+                return userEntity;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isAdmin(String userName) {
+        UserEntity userEntity = userDao.selectUser(userName);
+        if(null != userEntity) {
+            if("admin".equals(userEntity.getIdentity())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

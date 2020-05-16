@@ -12,6 +12,10 @@
         select * from example where id = #{id}
     </select>
 
+    <select id="allConfigureList" resultType="win.simple.entity.VmConfigureEntity">
+        select * from configure
+    </select>
+
     <select id="configureList" resultType="win.simple.entity.VmConfigureEntity">
         select * from configure where userid = #{userid}
     </select>
@@ -24,6 +28,10 @@
         select * from configure where vmuuid = #{vmuuid}
     </select>
 
+    <delete id="deleteConfigure">
+        delete from configure where id = #{id}
+    </delete>
+
     <!--获取指定虚拟机允许创建端口的数量-->
     <select id="getNatPort" resultType="int">
         select natport from configure where vmuuid = #{vmuuid}
@@ -34,12 +42,64 @@
         update configure set natport = #{natport} where vmuuid = #{vmuuid}
     </update>
 
+    <!--获取指定虚拟机使用状态-->
+    <select id="getUseState" resultType="int">
+        select usestate from configure where vmuuid = #{vmuuid}
+    </select>
+
+    <!--设置指定虚拟机使用状态-->
+    <update id="setUseState">
+        update configure set usestate = #{usestate} where vmuuid = #{vmuuid}
+    </update>
+
     <insert id="createConfigure">
-        insert into configure(vmuuid, userid, payment, time, createtime, examplename, natport) values (#{vmuuid}, #{userid}, #{payment}, #{time}, #{createtime}, #{examplename}, #{natport})
+        insert into configure(vmuuid, userid, payment, time, createtime, examplename, natport, usestate, osid, exampleid) values (#{vmuuid}, #{userid}, #{payment}, #{time}, #{createtime}, #{examplename}, #{natport}, #{usestate}, #{osid}, #{exampleid})
     </insert>
 
     <select id="vmOwner" resultType="int">
         select userid from configure where vmuuid = #{vmuuid}
+    </select>
+
+    <update id="setConfigureOsId">
+        update configure set osid = #{osid} where vmuuid = #{vmuuid}
+    </update>
+
+    <select id="getConfigureexampleId" resultType="int">
+        select exampleid from configure where vmuuid = #{vmuuid}
+    </select>
+
+    <update id="setConfigureExpireTime">
+        update configure set time = #{time} where vmuuid = #{vmuuid}
+    </update>
+
+    <update id="editExample" parameterType="win.simple.entity.UserEntity">
+        update example set name = #{name}, cpuexecutioncap = #{cpuexecutioncap}, cpus = #{cpus}, cputype = #{cputype}, memory = #{memory}, cpuhz = #{cpuhz}, price = #{price}, osid = #{osid}, defalutnatport = #{defalutnatport} where id = #{id}
+    </update>
+
+    <update id="setCacheInfo" parameterType="win.simple.entity.CacheInfoEntity">
+        update configure
+        <set>
+            <if test="intranetip != null">
+                intranetip = #{intranetip},
+            </if>
+            <if test="vmname != null">
+                vmname = #{vmname},
+            </if>
+            <if test="vmstate != null">
+                vmstate = #{vmstate},
+            </if>
+            <if test="cpu != null">
+                cpu = #{cpu},
+            </if>
+            <if test="memory != null">
+                memory = #{memory}
+            </if>
+        </set>
+        where vmuuid = #{vmuuid}
+    </update>
+
+    <select id="getIntranetIp" resultType="string">
+        select intranetip from configure where vmuuid = #{vmuuid}
     </select>
 
 </mapper>

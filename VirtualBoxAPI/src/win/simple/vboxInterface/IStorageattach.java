@@ -4,4 +4,6 @@ public interface IStorageattach {
 
     void callBackLine(String data);
 
+    void over();
+
 }

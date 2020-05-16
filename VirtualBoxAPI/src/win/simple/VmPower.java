@@ -14,8 +14,7 @@ public class VmPower {
      * @return
      */
     public String startVM(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage startvm " + name + " --type headless");
-        return start();
+        return start("VBoxManage startvm " + name + " --type headless");
     }
 
     /**
@@ -23,8 +22,7 @@ public class VmPower {
      * @param name
      */
     public String sleepVM(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage controlvm " + name + " savestate");
-        return start();
+        return start("VBoxManage controlvm " + name + " savestate");
     }
 
 
@@ -34,13 +32,13 @@ public class VmPower {
      * @return
      */
     public String powerOff(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage controlvm " + name + " poweroff");
-        return start();
+        return start("VBoxManage controlvm " + name + " poweroff");
     }
 
 
 
-    private String start() {
+    private String start(String command) {
+        VBoxRuntime vBoxRuntime = new VBoxRuntime(command);
         vBoxRuntime.exec();
         Process process = vBoxRuntime.getProcess();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));

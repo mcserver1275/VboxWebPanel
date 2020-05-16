@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台</title>
+    <link rel="icon" href="../../image/favicon.svg" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="../../css/bootstrap.css" />
+    <script type="text/javascript" src="../../js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../../js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../js/bootstrap-table.js"></script>
+
+    <script type="text/javascript" src="../../js/function.js"></script>
+    <script type="text/javascript" src="../../js/vmfunction.js"></script>
+
+    <link rel="stylesheet" href="../../css/jquery.mCustomScrollbar.min.css" />
+    <link rel="stylesheet" href="../../css/custom.css">
+
+    
+    <link href="../../css/bootstrap-editable.css" rel="stylesheet"/>
+    <script src="../../js/bootstrap-editable.min.js"></script>
+    <script src="../../js/bootstrap-table-editable.js"></script>
+    
+    <!-- <script src="https://cdn.bootcss.com/x-editable/1.5.1/bootstrap3-editable/js/bootstrap-editable.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-table/1.11.1/extensions/editable/bootstrap-table-editable.js"></script> -->
+
+    <script type="text/javascript">
+        // 公网地址
+        var publicip;
+        // 服务地区
+        var serviceregion;
+
+        // 获取web信息
+        webinfo();
+        loadPage('example.html');
+
+        $(document).ready(() => {
+            
+        });
+
+        function authorization() {
+            $.ajax({
+                url: apiAddress + 'user/authorization',
+                type: 'post',
+                dataType: 'json',
+                data: {token: tk},
+                success: (data) => {
+                    let state = data.state;
+                    let datas = data.data;
+                    if(state == 200) {
+                        if(datas.identity != 'admin') {
+                            window.location.href="/";
+                        }
+
+                        publicip = datas.publicip;
+                        serviceregion = datas.serviceregion;
+                        $('.user-name').text(datas.name);
+                        $('.user-role').text(datas.identity);
+                        
+                    } else {
+                        window.location.href="../../page/login.html";
+                    }
+                }
+            });
+        }
+
+        function loadPage(pageName) {
+            $.ajax({
+                url: pageName,
+                type: 'get',
+                success: (data) => {
+                    $('.page-content .container').html(data);
+                }
+            });
+        }
+
+    </script>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #F5F5F5;
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-frame {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            width: 100%;
+            height: fit-content;
+            background-color: #FFFFFF;
+            border-radius: 3px;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+        }
+        .info-frame .title {    
+            font-weight: 600;
+            font-size: 18px; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper" style="z-index: 99999;">
+    <nav id="sidebar" class="sidebar-wrapper">
+      <div class="sidebar-content">
+        <a href="#" id="toggle-sidebar"><i class="glyphicon glyphicon-align-justify" style="color: #2980b9;"></i></a>
+        <div class="sidebar-brand">
+            <a href="#">管理后台</a>
+        </div>
+        <div class="sidebar-header">
+            <div class="user-pic">
+                <img class="img-responsive img-rounded" src="../../image/user.jpg" alt="">
+            </div>
+            <div class="user-info">
+                <span class="user-name"></span>
+                <span class="user-role"></span>
+            </div>
+        </div><!-- sidebar-header  -->
+        <div class="sidebar-menu">
+            <ul>
+                <li class="header-menu"><span>管理菜单</span></li>
+                <li><a href="javascript:void(loadPage('user.html'))"><i class="glyphicon glyphicon-user"></i><span>用户管理</span></a></li>                   
+                <li><a href="javascript:void(loadPage('vm.html'))"><i class="glyphicon glyphicon-tasks"></i><span>虚拟机管理</span></a></li>
+                <li><a href="javascript:void(loadPage('example.html'))"><i class="glyphicon glyphicon-shopping-cart"></i><span>实例管理</span></a></li>
+                <li><a href="javascript:void(loadPage('web.html'))"><i class="glyphicon glyphicon-globe"></i><span>网站管理</span></a></li>
+            </ul>
+           </div><!-- sidebar-menu  -->            
+        </div><!-- sidebar-content  -->
+        <div class="sidebar-footer">
+            <a href="javascript:void(window.location.href='/')"><i class="glyphicon glyphicon-home" style="margin-right: 5px;"></i>返回首页</a>
+        </div>
+    </nav><!-- sidebar-wrapper  -->
+    <main class="page-content">
+        <div class="container">
+        </div>
+    </main><!-- page-content" -->
+</div><!-- page-wrapper -->
+
+<script src="../../js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="../../js/custom.js"></script>
+
+</body>
+</html>

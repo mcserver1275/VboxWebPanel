@@ -101,6 +101,7 @@ public class VmStoragectl {
                 e.printStackTrace();
             }
         }
+        iStorageattach.over();
     }
 
     private String start() {

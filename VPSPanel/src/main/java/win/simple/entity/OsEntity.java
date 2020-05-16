@@ -1,10 +1,17 @@
 package win.simple.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class OsEntity {
 
     private int id;
     private String ostype;
     private String osvdi;
+    private String defaultusername;
+    private String defalutpassword;
+    private String guestusername;
+    private String guestpassword;
 
     public int getId() {
         return id;
@@ -30,12 +37,48 @@ public class OsEntity {
         this.osvdi = osvdi;
     }
 
+    public String getDefaultusername() {
+        return defaultusername;
+    }
+
+    public void setDefaultusername(String defaultusername) {
+        this.defaultusername = defaultusername;
+    }
+
+    public String getDefalutpassword() {
+        return defalutpassword;
+    }
+
+    public void setDefalutpassword(String defalutpassword) {
+        this.defalutpassword = defalutpassword;
+    }
+
+    public String getGuestusername() {
+        return guestusername;
+    }
+
+    public void setGuestusername(String guestusername) {
+        this.guestusername = guestusername;
+    }
+
+    public String getGuestpassword() {
+        return guestpassword;
+    }
+
+    public void setGuestpassword(String guestpassword) {
+        this.guestpassword = guestpassword;
+    }
+
     @Override
     public String toString() {
         return "OsEntity{" +
                 "id=" + id +
                 ", ostype='" + ostype + '\'' +
                 ", osvdi='" + osvdi + '\'' +
+                ", defaultusername='" + defaultusername + '\'' +
+                ", defalutpassword='" + defalutpassword + '\'' +
+                ", guestusername='" + guestusername + '\'' +
+                ", guestpassword='" + guestpassword + '\'' +
                 '}';
     }
 }

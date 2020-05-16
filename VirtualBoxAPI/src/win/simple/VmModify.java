@@ -56,8 +56,8 @@ public class VmModify {
      * 设置网络为NAT
      * @param name 虚拟机名字或者虚拟机UUID
      */
-    public String bridging(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage modifyvm " + name + " --nic1 nat --nictype1 82540EM --cableconnected1 on --bridgeadapter1 enp5s0f0");
+    public String bridging(String name, int port, String netWorkType) {
+        vBoxRuntime = new VBoxRuntime("VBoxManage modifyvm " + name + " --nic" + port + " " + netWorkType + " --nictype" + port + " 82540EM --cableconnected" + port + " on --bridgeadapter" + port + " enp5s0f0");
         return start();
     }
 

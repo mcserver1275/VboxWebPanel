@@ -6,11 +6,11 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class VmInfo {
-
-    private VBoxRuntime vBoxRuntime;
 
     public VmInfo() {
     }
@@ -20,9 +20,8 @@ public class VmInfo {
      * @return
      */
     public String version() {
-        vBoxRuntime = new VBoxRuntime("VBoxManage -v");
         JSONObject jsonObject = new JSONObject();
-        String data = start();
+        String data = start("VBoxManage -v");
         jsonObject.put("version", data.replace("\n", ""));
         return jsonObject.toString();
     }
@@ -32,11 +31,10 @@ public class VmInfo {
      * @return
      */
     public String vms() {
-        vBoxRuntime = new VBoxRuntime("VBoxManage list vms");
         JSONObject jsonObject = new JSONObject();
         JSONArray InfoArray = new JSONArray();
 
-        String data = start();
+        String data = start("VBoxManage list vms");
         String[] splitInfo = data.split("\n");
         for(int i = 0; i < splitInfo.length; i++) {
             JSONObject vmInfoJson = new JSONObject();
@@ -57,11 +55,10 @@ public class VmInfo {
      * @return
      */
     public String runningVms() {
-        vBoxRuntime = new VBoxRuntime("VBoxManage list runningvms");
         JSONObject jsonObject = new JSONObject();
         JSONArray InfoArray = new JSONArray();
 
-        String data = start();
+        String data = start("VBoxManage list runningvms");
         String[] splitInfo = data.split("\n");
         for(int i = 0; i < splitInfo.length; i++) {
             JSONObject vmInfoJson = new JSONObject();
@@ -81,11 +78,10 @@ public class VmInfo {
      * @return
      */
     public String hdds() {
-        vBoxRuntime = new VBoxRuntime("VBoxManage list hdds");
         JSONObject jsonObject = new JSONObject();
         JSONArray InfoArray = new JSONArray();
 
-        String data = start();
+        String data = start("VBoxManage list hdds");
         String[] splitHdds = data.split("\n\n");
         for(int hddsIndex = 0; hddsIndex < splitHdds.length; hddsIndex++) {
             JSONObject hddJson = new JSONObject();
@@ -109,11 +105,10 @@ public class VmInfo {
      * @return
      */
     public String dvds() {
-        vBoxRuntime = new VBoxRuntime("VBoxManage list dvds");
         JSONObject jsonObject = new JSONObject();
         JSONArray InfoArray = new JSONArray();
 
-        String data = start();
+        String data = start("VBoxManage list dvds");
         String[] splitDvds = data.split("\n\n");
         for(int dvdsIndex = 0; dvdsIndex < splitDvds.length; dvdsIndex++) {
             JSONObject dvdJson = new JSONObject();
@@ -138,8 +133,7 @@ public class VmInfo {
      * @return
      */
     public String showVmInfo(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage showvminfo " + name + " --machinereadable");
-        String str = start();
+        String str = start("VBoxManage showvminfo " + name + " --machinereadable");
         String[] splitInfo = str.split("\n");
         JSONObject jsonObject = new JSONObject();
         for(int i = 0; i < splitInfo.length; i++) {
@@ -152,8 +146,80 @@ public class VmInfo {
     }
 
 
+    /**
+     * 设置性能资源监视
+     * @param name 虚拟机名字或者虚拟机UUID
+     * @param period 刷新间隔
+     * @param value 监视项
+     * @return
+     */
+    public String metricsSetup(String name, int period, String value) {
+        return start("VBoxManage metrics setup --period " + period + " --samples 5 " + name + " " + value);
+    }
 
-    private String start() {
+    /**
+     * 性能资源查询
+     * @param name 虚拟机名字或者虚拟机UUID
+     * @param value 监视项
+     * @return
+     */
+    public String metricsQuery(String name, String value) {
+        String data = start("VBoxManage metrics query " + name + " " + value);
+        JSONObject jsonObject = new JSONObject();
+        String[] splitInfos = data.split("\n");
+        for(int i = 2; i < splitInfos.length; i++) {
+            String[] info = splitInfos[i].split(" ");
+
+            // 过滤掉所有的空数组
+            List<String> filter = new ArrayList<>();
+            for(int j = 0; j < info.length; j++) {
+                if(!"".equals(info[j])) {
+                    filter.add(info[j].trim());
+                }
+            }
+
+            List<String> kv = new ArrayList<>();
+            StringBuffer Values = new StringBuffer();
+            for(int j = 0; j < filter.size(); j++) {
+                if(j > 1) {
+                    Values.append(filter.get(j));
+                } else {
+                    kv.add(filter.get(j));
+                }
+            }
+
+            for(int j = 0; j < kv.size(); j++) {
+                if(j == 1) {
+                    JSONArray jsonArray = new JSONArray(Values.toString().replace("%", "").split(","));
+                    jsonObject.put(kv.get(1), jsonArray);
+                }
+            }
+            kv.removeAll(kv);
+        }
+        return jsonObject.toString();
+    }
+
+    /**
+     * 查询宿主机的信息
+     * @return
+     */
+    public String hostInfo() {
+        String data = start("VBoxManage list hostinfo");
+        JSONObject jsonObject = new JSONObject();
+        String[] splitInfos = data.split("\n");
+        for(String splitInfo : splitInfos) {
+            String[] infos = splitInfo.split(": ");
+            if(infos.length >= 2) {
+                jsonObject.put(infos[0], infos[1]);
+            }
+        }
+        return jsonObject.toString();
+    }
+
+
+
+    private String start(String command) {
+        VBoxRuntime vBoxRuntime = new VBoxRuntime(command);
         vBoxRuntime.exec();
         Process process = vBoxRuntime.getProcess();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));

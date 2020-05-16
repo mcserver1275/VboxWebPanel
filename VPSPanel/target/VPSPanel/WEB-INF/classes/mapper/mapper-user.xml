@@ -32,4 +32,20 @@
         update user set username = #{username}, password = #{password}, identity = #{identity}, deposit = #{deposit} where id = #{id}
     </update>
 
+    <insert id="addRechargeCode">
+        insert into rechargecode(code, deposit) values (#{code}, #{deposit})
+    </insert>
+
+    <select id="rechargeCodeInfo" resultType="win.simple.entity.RechargeCodeEntity">
+        select * from rechargecode where code = #{code}
+    </select>
+
+    <delete id="deleteRechargeCode">
+        delete from rechargecode where id = #{id}
+    </delete>
+
+    <select id="rechargeCodeInfos" resultType="win.simple.entity.RechargeCodeEntity">
+        select * from rechargecode
+    </select>
+
 </mapper>

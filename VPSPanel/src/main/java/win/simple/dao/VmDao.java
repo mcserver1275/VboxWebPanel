@@ -7,10 +7,22 @@ import java.util.List;
 
 public interface VmDao {
 
+    /**
+     * 默认数据存储位置
+     * @return
+     */
     String dataPath();
 
+    /**
+     * 查询公网IP
+     * @return
+     */
     String publicip();
 
+    /**
+     * 查询服务地区
+     * @return
+     */
     String serviceregion();
 
     /**
@@ -43,8 +55,31 @@ public interface VmDao {
      */
     void deleteOccupyPort(@Param("portname") String portname);
 
+    /**
+     * 查询系统列表
+     * @return
+     */
     List<OsEntity> osList();
 
+    /**
+     * 查询指定ID的系统信息
+     * @param id
+     * @return
+     */
     OsEntity selectos(@Param("id") int id);
+
+    /**
+     * 查询指定ID的系统默认用户名和密码
+     * @param id
+     * @return
+     */
+    OsEntity selectDefaultUserNameAndPassword(@Param("id") int id);
+
+    /**
+     * 查询指定ID的系统来宾账号和密码
+     * @param id
+     * @return
+     */
+    OsEntity selectGuestUserNameAndPassword(@Param("id") int id);
 
 }

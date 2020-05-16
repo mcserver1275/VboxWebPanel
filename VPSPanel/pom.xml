@@ -132,6 +132,12 @@
       <version>2.9.2</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/net.coobird/thumbnailator -->
+    <dependency>
+      <groupId>net.coobird</groupId>
+      <artifactId>thumbnailator</artifactId>
+      <version>0.4.11</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -158,6 +164,11 @@
         <plugin>
           <artifactId>maven-war-plugin</artifactId>
           <version>3.2.2</version>
+          <configuration>
+            <!--将class打包jar作为附件-->
+            <attachClasses>true</attachClasses>
+            <failOnMissingWebXml>false</failOnMissingWebXml>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>

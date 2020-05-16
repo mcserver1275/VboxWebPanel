@@ -24,7 +24,7 @@ public class VmController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "token", value = "用户名令牌", dataType = "String", paramType = "query"),
             @ApiImplicitParam(name = "vmuuid", value = "虚拟机ID", dataType = "String", paramType = "query"),
-            @ApiImplicitParam(name = "type", value = "操作类型, 1(开机), 2(关闭)", dataType = "Integer", paramType = "query")
+            @ApiImplicitParam(name = "type", value = "操作类型, 1(开机), 2(关机)", dataType = "Integer", paramType = "query")
     })
     @RequestMapping(value = "power", method = RequestMethod.POST, produces = "application/json")
     public StateEntity power(@RequestParam("token") String token, @RequestParam("vmuuid") String vmUUID, @RequestParam("type") int type) {
@@ -97,6 +97,18 @@ public class VmController {
     @RequestMapping(value = "changeos", method = RequestMethod.POST, produces = "application/json")
     public StateEntity changeOs(@RequestParam("token") String token, @RequestParam("vmuuid") String vmUUID, @RequestParam("osid") int osId) {
         return vmService.changeOs(token, vmUUID, osId);
+    }
+
+
+    @ApiOperation(value = "修改系统密码", httpMethod = "POST")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "token", value = "用户名令牌", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "vmuuid", value = "虚拟机ID", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "password", value = "新的密码", dataType = "String", paramType = "query"),
+    })
+    @RequestMapping(value = "resetPass", method = RequestMethod.POST, produces = "application/json")
+    public StateEntity resetPass(@RequestParam("token") String token, @RequestParam("vmuuid") String vmUUID, @RequestParam("password") String password) {
+        return vmService.resetPass(token, vmUUID, password);
     }
 
 }

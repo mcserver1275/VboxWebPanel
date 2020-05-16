@@ -13,7 +13,7 @@
     </select>
 
     <select id="dataPath" resultType="string">
-        select datapath from websettings where id = 1
+        select datapath from vmsettings where id = 1
     </select>
 
 </mapper>

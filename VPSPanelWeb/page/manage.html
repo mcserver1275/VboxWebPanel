@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>资源管理</title>
+    <link rel="icon" href="../image/favicon.svg" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
     <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/bootstrap-table.js"></script>
+    <script type="text/javascript" src="../js/echarts/echarts.min.js"></script>
+    <script type="text/javascript" src="../js/echarts/walden.js"></script>
 
     <script type="text/javascript" src="../js/function.js"></script>
     <script type="text/javascript" src="../js/vmfunction.js"></script>
@@ -22,10 +25,10 @@
         // 服务地区
         var serviceregion;
 
-        // 获取web信息
-        webinfo();
-
         $(document).ready(() => {
+            // 获取web信息
+            webinfo();
+
             $('.portMappingTable').bootstrapTable({
                 singleSelect: true,
                 striped: false,
@@ -115,6 +118,7 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             margin: 0;
             background-color: #F5F5F5;
+            padding-right: 0!important;
         }
         
         .navigation {
@@ -134,6 +138,7 @@
             background-color: #FFFFFF;
             border-radius: 3px;
             box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
         }
         .info-frame .title {    
             font-weight: 600;
@@ -144,6 +149,9 @@
         }
         .info-frame span {
             color:#2d3436;
+        }
+        .info-frame i {
+            color:#3498db;
         }
         .info-frame button {
             margin-left: 5px;
@@ -161,8 +169,16 @@
             max-height: 350px;
             height: 100%;
         }
+        .info-frame .text-muted {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
 
         #portModal .modal-body .input-group {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        #resetpassModal .modal-body .input-group {
             margin-top: 10px;
             margin-bottom: 10px;
         }
@@ -177,10 +193,21 @@
         #portDelete {
             margin-right: 20px;
             color: #e74c3c;
+            cursor: pointer;
         }
         #portDelete:hover {
             color: #c0392b;
         }
+
+        .broadside-btn {
+            margin-left: 10px; 
+            cursor: pointer;
+            transition: 0.5s color;
+        }
+        .broadside-btn:hover {
+            color: #2980b9; 
+        }
+
     </style>
 </head>
 <body>
@@ -195,10 +222,10 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
-                        <li><a href="#">基本资料</a></li>
-                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/manage.html">后台管理</a></li>
+                        <li><a href="./profile.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-user"></span>基本资料</a></li>
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/index.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-edit"></span>后台管理</a></li>
                         <li class="divider"></li>
-                        <li><a href="javascript:void(logout())">注销</a></li>
+                        <li><a href="javascript:void(logout())"><span style="margin-right: 5px;" class="glyphicon glyphicon-log-out"></span>注销</a></li>
                     </ul>
                 </div>
             </div>
@@ -212,6 +239,7 @@
             left: 10px;
             transform: translateY(-50%);
             cursor: pointer;
+            transition: all 0.3s;
         }
         .backHome:hover {
             font-size: 20px;
@@ -230,33 +258,53 @@
                 <div class="info-frame">
                     <p class="title">基本信息</p>
                     <div>
-                        <p class="text-muted">ID：<span class="uuid"></span></p>
-                        <p class="text-muted">运行状态：<span class="vmstate"></span></p>
-                        <p class="text-muted">实例规格：<span class="exampleName"></span></p>
-                        <p class="text-muted">系统类型：
-                            <span class="ostype"></span>
-                            <span class="glyphicon glyphicon-pencil reinstallSystem-btn" title="重装系统" data-toggle="tooltip" data-placement="top" style="margin-left: 10px; color: #3498db; cursor: pointer;"></span>
+                        <p class="text-muted">ID：<span class="uuid">-</span></p>
+                        <p class="text-muted">实例名：<span class="name">-</span></p>
+                        <p class="text-muted">运行状态：<span class="vmstate">-</span></p>
+                        <p class="text-muted">实例规格：<span class="exampleName">-</span></p>
+                        <p class="text-muted">区域：<span class="serviceregion">-</span></p>
+                        <p class="text-muted">默认用户名：<span class="defalutUserName">-</span></p>
+                        <p class="text-muted">默认密码：
+                            <span class="defalutPassword">-</span>
+                            <i class="glyphicon glyphicon-pencil resetpass-btn broadside-btn" title="重置密码" data-toggle="tooltip" data-placement="top"></i>
                         </p>
-                        <p class="text-muted">区域：<span class="serviceregion"></span></p>
-                        <p class="text-muted">默认用户名：Administrator</span></p>
-                        <p class="text-muted">默认密码：kuyun666.</span></p>
                     </div>
-                    <script>
-                        $(function () { $("[data-toggle='tooltip']").tooltip(); });
-                    </script>
                 </div>
                 <div class="info-frame">
+                    <div class="btn-group pull-right configInfoMore">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            更多
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="javascript:location.href = 'upgrade.html?uuid=' + uuid;">套餐升级</a></li>
+                        </ul>
+                    </div>
+
                     <p class="title">配置信息</p>
-                    <p class="text-muted">CPU：<span class="cpu"></span></p>
-                    <p class="text-muted">内存：<span class="memory"></span></p>
-                    <p class="text-muted">公网IP：<span class="publicip"></span></p>
+                    <p class="text-muted">CPU：<span class="cpu">-</span></p>
+                    <p class="text-muted">内存：<span class="memory">-</span></p>
+                    <p class="text-muted">公网IP：<span class="publicip">-</span></p>
+                    <p class="text-muted intranetIp-frame" style="display: none;">
+                        内网IP：<span class="intranetIp">-</span>
+                    </p>
+                    <p class="text-muted">系统类型：
+                        <span class="ostype"></span>
+                        <i class="glyphicon glyphicon-pencil reinstallSystem-btn broadside-btn" title="重装系统" data-toggle="tooltip" data-placement="top"></i>
+                    </p>
                 </div>
                 <div class="info-frame">
                     <p class="title">付费信息</p>
-                    <p class="text-muted">付费方式：<span class="payment"></span></p>
-                    <p class="text-muted">到期时间：<span class="time"></span></p>
-                    <p class="text-muted">创建时间：<span class="createtime"></span></p>
+                    <p class="text-muted">付费方式：<span class="payment">-</span></p>
+                    <p class="text-muted">到期时间：
+                        <span class="time">-</span>
+                        <i class="glyphicon glyphicon-time renew-btn broadside-btn" title="续费服务" data-toggle="tooltip" data-placement="top"></i>
+                    </p>
+                    <p class="text-muted">创建时间：<span class="createtime">-</span></p>
                 </div>
+                <script>
+                    $(function () { $("[data-toggle='tooltip']").tooltip(); });
+                </script>
             </div>
             <div class="col-sm-7">
                 <div class="info-frame createProgress-info-frame" style="display: none">
@@ -275,20 +323,66 @@
                         <button type="button" class="btn btn-danger stop-btn" disabled><span class="glyphicon glyphicon-stop power-btn"></span>关机</button>
                     </div>
                 </div>
+
+                <div class="info-frame utilization" style="display: none;">
+                    <p class="title">监控信息</p>
+                    <div id="utilization" style="width: 100%; height: 300px;"></div>
+                </div>
+                <script type="text/javascript">
+                    // 基于准备好的dom，初始化echarts实例
+                    var utilizationChart = echarts.init(document.getElementById('utilization'), 'walden');
+                    // 指定图表的配置项和数据
+                    var option = {
+                        tooltip: {
+                            trigger: 'axis',
+                            formatter:'{a0}：{c0}%'
+                        },
+                        legend: {
+                            selectedMode: 'single',
+                            data: ['CPU利用率','内存使用率']
+                        },
+                        toolbox: {
+                            show: true
+                        },
+                        calculable: true,
+                        xAxis: [{
+                            show: false,
+                            type: 'category',
+                            boundaryGap: false,
+                            data: ['','','','','']
+                        }],
+                        yAxis: [{
+                            type: 'value',
+                            min: 0,
+                            max: 100,
+                        }]
+                    };
+                    // 使用刚指定的配置项和数据显示图表。
+                    utilizationChart.setOption(option);
+
+                    window.onresize = function () {
+                        utilizationChart.resize();
+                    }
+                </script>
+
                 <div class="info-frame">
                     <p class="title">快照预览</p>
-                    <div class="">
-                        <img src="../image/zw.png" class="img-thumbnail img-snapshot">
-                    </div>
+                    <img src="../image/zw.png" class="img-thumbnail img-snapshot">
                 </div>
                 <div class="info-frame">
-                    <p class="title">端口映射</p>
-                    <table class="table table-hover portMappingTable">
-                        <thead>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <p class="title">
+                        端口映射
+                        <span style="margin-left: 5px; color: #34495e; font-size: 12px;">剩余可添加端口数量: <span class="natport">0</span><span>
+                    </p>
+                    <p class="visible-xs-block" style="color: #7f8c8d;">可左右滑动表格查看信息</p>
+                    <div style="overflow-x: auto;">
+                        <table class="table table-hover portMappingTable">
+                            <thead>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                     <button type="button" class="btn btn-default addport">创建新端口</button>
                 </div>
             </div>
@@ -327,6 +421,7 @@
                         <span class="input-group-addon">外网端口</span>
                         <input type="text" class="form-control externalPort" placeholder="不能留空">
                     </div>
+                    <span style="font-weight: 600;">注意：外网端口你只能输入<span class="portrangemin">1</span>~<span class="portrangemax">65535</span>之间的端口</span>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -370,7 +465,7 @@
     </script>
 
     <!-- 普通提示 - 模态框 -->
-    <div class="modal fade ordinary-modal" id="powerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade ordinary-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -423,8 +518,20 @@
                     </h4>
                 </div>
                 <div class="modal-body reinstallSystem-modal-body"> 
-                    <p style="color: #2ecc71;">重装系统需要你等待一段的时间完成</p>
-                    <p style="color: #e74c3c;">警告：如果你的数据放在C盘请备份完在重装，<strong>不然数据丢失不负责！</strong></p>
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">提示</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>重装系统需要你等待一段的时间完成</p>
+                            <p style="color: #e74c3c;">警告：如果你的数据放在C盘请备份完在重装，<strong>不然数据丢失不负责！</strong></p>
+                            <div class="checkbox">
+                                <label>
+                                  <input class="reinstallSystem-checkbox" type="checkbox">确认重装
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="input-group">
                         <span class="input-group-addon">重装系统类型</span>
                         <select class="form-control agreement reinstallSystem-select">
@@ -440,7 +547,87 @@
         </div>
     </div>
 
-    <script>
+    <!-- 续费服务 - 模态框 -->
+    <div class="modal fade" id="renewModal" tabindex="-1" role="dialog" aria-labelledby="renewModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="renewModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body renew-modal-body"> 
+                    <div style="margin-bottom: 5px;">
+                        价格
+                        <span class="renewPrice" style="font-size: 35px;">0</span>
+                        <span style="font-size: 35px;">￥</span>
+                    </div>
+
+                    <div class="pay" style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-info pay-month-btn">按月付费</button>
+                        <button type="button" class="btn btn-info pay-year-btn">按年付费</button>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 10px;">
+                        <span class="input-group-addon">续费时长</span>
+                        <select class="form-control dateSelect" onchange="calcCost()">
+                        </select>
+                    </div>
+                    <span style="font-weight: 600;">注意：点击确认后系统会自动扣除您的余额进行续费，如果放弃续费请不要点击确认</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary modal-btn modal-renew-btn" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重置密码 - 模态框 -->
+    <div class="modal fade" id="resetpassModal" tabindex="-1" role="dialog" aria-labelledby="resetpassModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="resetpassModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body resetpass-modal-body"> 
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">提示</h3>
+                        </div>
+                        <div class="panel-body">
+                            <span>该功能不是百分百成功，修改密码的时候请确保服务器正常运行</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">用户名</span>
+                        <input type="text" class="form-control" placeholder="root (Linux) / administrator (Windows)" disabled>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">新密码</span>
+                        <input type="password" class="form-control reset-PassWord" placeholder="不能留空">
+                    </div>
+                    <span style="color: #636e72;">8-30个字符，必须同时包含下面四项中的三项：大写字母、小写字母、数字、和特殊字符（仅支持下列特殊字符： ( ) ` ~ ! @ # $ % ^ & * - _ + = | { } [ ] : ; ' &lt; &gt; , . ? / ）。其中，Windows 实例不能以斜线号（/）为密码首字符。</span>
+                    <div class="input-group">
+                        <span class="input-group-addon">确认密码</span>
+                        <input type="password" class="form-control reset-RepeatPassword" placeholder="不能留空">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary modal-btn modal-resetpass-btn" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
         // 全屏加载
         var loading = new KZ_Loading();
         loading.show();
@@ -458,7 +645,7 @@
         $('.stop-btn').click(() => {
             operationType = 2;
             $('#powerModalLabel').text('电源提示');
-            $('.power-modal-body').html('你确定要关闭服务器？<br />这个操作相当于按下主机关闭电源按钮，如果可以连接上服务器建议使用服务器里的关机<span style="color: red;">（可能会造成重要的数据丢失）</span>');
+            $('.power-modal-body').html('你确定要关闭服务器？<br />这个操作相当于拔掉主机电源，如果可以连接上服务器建议使用服务器里的关机<span style="color: red;">（可能会造成重要的数据丢失）</span>');
             $('.power-modal').modal('show'); 
         });
 
@@ -470,7 +657,7 @@
         setInterval(() => {
             // 获取资源信息
             vminfo(uuid);
-        }, 5000);
+        }, 8000);
 
         $('.addport').click(() => {
             $('#portModal').modal('show');
@@ -483,9 +670,107 @@
             $('#reinstallSystemModal').modal('show');
         });
         $('.modal-reinstallSystem-btn').click(() => {
-            let reinstallSystem_select = $('.reinstallSystem-select');
-            changeOs(reinstallSystem_select.val());
+            let isChecked = $(".reinstallSystem-checkbox").is(':checked');
+            if(isChecked) {
+                let reinstallSystem_select = $('.reinstallSystem-select');
+                changeOs(reinstallSystem_select.val());
+            } else {
+                Modal("重装系统", "你必须勾上确认重装，才能重装系统");
+            }
         });
+
+
+        // 续费服务事件
+        $('.renew-btn').click(() => {
+            calcCost();
+            $('#renewModalLabel').text('续费服务');
+            $('#renewModal').modal('show');
+        });
+
+
+
+        // 重置密码
+        $('.resetpass-btn').click(() => {
+            $('#resetpassModalLabel').text('重置密码');
+            $('#resetpassModal').modal('show');
+        });
+        $('.modal-resetpass-btn').click(() => {
+            let passWord = $('.reset-PassWord').val();
+            let repeatPassword = $('.reset-RepeatPassword').val();
+            if(passWord != undefined && repeatPassword != undefined && passWord != "" && repeatPassword != "") {
+                if(repeatPassword == passWord) {
+                    resetPassword(passWord);
+                    $('.reset-PassWord').val("");
+                    $('.reset-RepeatPassword').val("");
+                } else {
+                    Modal("重置密码提示", "两次输入的密码不一致");
+                }
+            } else {
+                Modal("重置密码提示", "密码不能为空！");
+            }
+        });
+
+    </script>
+
+    <script type="text/javascript">
+        //默认续费模式
+        var price = 0;
+        var defalutRenewMode = 1;
+        loadRenewDateList();
+
+        $('.pay-month-btn').click(() => {
+            defalutRenewMode = 1;
+            loadRenewDateList();
+        });
+        $('.pay-year-btn').click(() => {
+            defalutRenewMode = 2;
+            loadRenewDateList();
+        });
+        $('.modal-renew-btn').click(() => {
+            var buydate = $('.dateSelect').find('option:selected').attr('value');
+            Renew(buydate);
+        });
+
+        function loadRenewDateList() {
+            $('.dateSelect').html('');
+            let defalutRenewText = (defalutRenewMode == 1) ? '月' : '年';
+            for(var i = 1; i <= 12; i++) {
+                $('.dateSelect').append('<option value="' + i + '">' + i + ' ' + defalutRenewText + '</option>');
+            }
+            calcCost();
+        }
+
+        // 计算费用
+        function calcCost() {
+            let calcPrice = 0;
+            var buydate = $('.dateSelect').find('option:selected').attr('value');
+
+            if(defalutRenewMode == 1) {
+                calcPrice = (price * buydate).toFixed(2);
+            }
+            if(defalutRenewMode == 2) {
+                calcPrice = (price * 12 * buydate).toFixed(2);
+            }
+            $('.renewPrice').text(calcPrice);
+        }
+
+        function Renew(date) {
+            $.ajax({
+                url: apiAddress + 'product/renew',
+                type: 'post',
+                dataType: 'json',
+                data: {token: tk, vmuuid: uuid, paymod: defalutRenewMode, buydate: date},
+                success: (data) => {
+                    var state = data.state;
+                    var datas = data.data;
+                    if(state == 200) {
+                        location.reload();
+                        return;
+                    } 
+                    Modal("续费提示", data.msg);
+                }
+            });
+        }
     </script>
 
 </body>

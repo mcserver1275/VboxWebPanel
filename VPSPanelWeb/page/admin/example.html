@@ -1,3 +1,352 @@
-<div class="info-frame">
-    <p class="title">实例管理</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>实例管理</title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="../../vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../../vendors/base/vendor.bundle.base.css">
+  <!-- endinject -->
+  <!-- plugin css for this page -->
+  <link rel="stylesheet" href="../../vendors/datatables.net-bs4/dataTables.bootstrap4.css">
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <link rel="stylesheet" href="../../css/style.css">
+  <!-- endinject -->
+  <link rel="icon" href="../../image/favicon.svg" type="image/x-icon">
+</head>
+<body>
+  <div class="container-scroller">
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+            <div class="navbar-brand-wrapper d-flex justify-content-center">
+        <div class="navbar-brand-inner-wrapper d-flex justify-content-between align-items-center w-100">  
+          <a class="navbar-brand brand-logo" href="../../index.html"><img src="../../image/logo.png" alt="logo"/></a>
+          <a class="navbar-brand brand-logo-mini" href="../../index.html"><img src="../../image/logo-mini.svg" alt="logo"/></a>
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="mdi mdi-sort-variant"></span>
+          </button>
+        </div>  
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+              <img src="../../image/user.jpg" alt="profile"/>
+              <span class="nav-profile-name">^_^</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item" href="javascript:void(logout())">
+                <i class="mdi mdi-logout text-primary"></i>
+                注销
+              </a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+          <span class="mdi mdi-menu"></span>
+        </button>
+      </div>
+    </nav>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:partials/_sidebar.html -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">
+              <i class="mdi mdi-home menu-icon"></i>
+              <span class="menu-title">仪表盘</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="user.html">
+              <i class="mdi mdi-account menu-icon"></i>
+              <span class="menu-title">用户管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="recharge.html">
+              <i class="mdi mdi-currency-usd menu-icon"></i>
+              <span class="menu-title">充值码管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:loadPage('vm.html');">
+              <i class="mdi mdi-server menu-icon"></i>
+              <span class="menu-title">虚拟机管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="example.html">
+              <i class="mdi mdi-shopping menu-icon"></i>
+              <span class="menu-title">实例管理</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:loadPage('web.html');">
+              <i class="mdi mdi-web menu-icon"></i>
+              <span class="menu-title">网站管理</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">实例管理</p>
+                  <div class="table-responsive">
+                    <table id="userTable" class="table" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>商品名</th>
+                          <th>CPU最大性能</th>
+                          <th>CPU数量</th>
+                          <th>CPU型号</th>
+                          <td>CPU频率</td>
+                          <td>内存大小(MB)</td>
+                          <td>产品价格</td>
+                          <td>默认系统ID</td>
+                          <td>默认端口数量</td>
+                          <td>操作</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <div class="d-sm-flex justify-content-center justify-content-sm-between">
+            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright &copy; 2020. <a href="http://kuoer.top/" title="KuoerPanel" target="_blank">KuoerPanel</a></span>
+            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center"></span>
+          </div>
+        </footer>
+      </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+
+  <!-- plugins:js -->
+  <script src="../../vendors/base/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page-->
+  <script src="../../vendors/chart.js/Chart.min.js"></script>
+  <script src="../../vendors/datatables.net/jquery.dataTables.js"></script>
+  <script src="../../vendors/datatables.net-bs4/dataTables.bootstrap4.js"></script>
+  <!-- End plugin js for this page-->
+  <!-- inject:js -->
+  <script src="../../js/off-canvas.js"></script>
+  <script src="../../js/hoverable-collapse.js"></script>
+  <script src="../../js/template.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="../../js/dashboard.js"></script>
+  <script src="../../js/data-table.js"></script>
+  <script src="../../js/jquery.dataTables.js"></script>
+  <script src="../../js/dataTables.bootstrap4.js"></script>
+  <!-- End custom js for this page-->
+  <script type="text/javascript" src="../../js/function.js"></script>
+  <script src="../../js/sweetalert2.min.js"></script>
+  <link rel="stylesheet" href="../../css/sweetalert2.min.css" id="theme-styles">
+
+  <script>
+    webinfo();
+
+    function authorization() {
+      let tk = localStorage.getItem('token')
+      $.ajax({
+        url: apiAddress + 'user/authorization',
+        type: 'post',
+        data: {token: tk},
+        success: (data) => {
+          let state = data.state;
+          let datas = data.data;
+          if(state == 200) {
+            if(datas.identity === 'member') {
+              location.href = '../../index.html';
+            }
+            $('.nav-profile-name').text(datas.name);
+          }
+        }
+      });               
+    }
+
+    $('#userTable').DataTable({
+      "columnDefs": [
+        {
+          "data": null,
+          "defaultContent": "<button id='edit' class='btn btn-dark btn-icon-text' type='button'>编辑<i class='mdi mdi-file-check btn-icon-append'></i></button>",
+          "targets": 10,
+        }
+      ],
+      "ajax": {
+        url: apiAddress + 'product/examplelist',
+        type: 'GET'
+      },
+      columns: [{
+          "data": "id"
+        }, {
+          "data": "name"
+        }, {
+          "data": "cpuexecutioncap"
+        }, {
+          "data": "cpus"
+        }, {
+          "data": "cputype"
+        }, {
+          "data": "cpuhz"
+        }, {
+          "data": "memory"
+        }, {
+          "data": "price"
+        }, {
+          "data": "osid"
+        }, {
+          "data": "defalutnatport"
+        }
+      ],
+      "bSort": false,  //禁止排序
+      "info": false,   //去掉底部文字
+      "select": true,
+      "language": {
+                "processing": "处理中...",
+                "lengthMenu": "显示 _MENU_ 项结果",
+                "zeroRecords": "没有匹配结果",
+                "info": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+                "infoEmpty": "显示第 0 至 0 项结果，共 0 项",
+                "infoFiltered": "(由 _MAX_ 项结果过滤)",
+                "infoPostFix": "",
+                "search": "搜索:",
+                "searchPlaceholder": "搜索...",
+                "url": "",
+                "emptyTable": "表中数据为空",
+                "loadingRecords": "载入中...",
+                "infoThousands": ",",
+                "paginate": {
+                    "first": "首页",
+                    "previous": "上页",
+                    "next": "下页",
+                    "last": "末页"
+                },
+                "aria": {
+                    paginate: {
+                        first: '首页',
+                        previous: '上页',
+                        next: '下页',
+                        last: '末页'
+                    },
+                    "sortAscending": ": 以升序排列此列",
+                    "sortDescending": ": 以降序排列此列"
+                },
+                "decimal": "-",
+                "thousands": "."
+            }
+    });
+
+    //为生成的按钮绑定方法
+    $("#userTable tbody").on("click", "#edit", function () {
+      //获取行
+      var row = $("#userTable tr").index($(this).closest("tr"));
+      //获取某列（从0列开始计数）的值
+      let id = $("#userTable").find("tr").eq(row).find("td").eq(0).text();
+      let name = $("#userTable").find("tr").eq(row).find("td").eq(1).text();
+      let cpuexecutioncap = $("#userTable").find("tr").eq(row).find("td").eq(2).text();
+      let cpus = $("#userTable").find("tr").eq(row).find("td").eq(3).text();
+      let cputype = $("#userTable").find("tr").eq(row).find("td").eq(4).text();
+      let cpuhz = $("#userTable").find("tr").eq(row).find("td").eq(5).text();
+      let memory = $("#userTable").find("tr").eq(row).find("td").eq(6).text();
+      let price = $("#userTable").find("tr").eq(row).find("td").eq(7).text();
+      let osid = $("#userTable").find("tr").eq(row).find("td").eq(8).text();
+      let defalutnatport = $("#userTable").find("tr").eq(row).find("td").eq(9).text();
+
+      editUser(id, name, cpuexecutioncap, cpus, cputype, cpuhz, memory, price, osid, defalutnatport);
+    });
+
+
+    function editUser(id, name, cpuexecutioncap, cpus, cputype, cpuhz, memory, price, osid, defalutnatport) {
+      Swal.fire({
+        title: '修改产品',
+        html: '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">商品名</span></div><input type="text" class="form-control" id="edit-name" value="' + name + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">CPU最大性能</span></div><input type="text" class="form-control" id="edit-cpuexecutioncap" value="' + cpuexecutioncap + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">CPU数量</span></div><input type="text" class="form-control" id="edit-cpus" value="' + cpus + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">CPU型号</span></div><input type="text" class="form-control" id="edit-cputype" value="' + cputype + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">CPU频率</span></div><input type="text" class="form-control" id="edit-cpuhz" value="' + cpuhz + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">内存大小(MB)</span></div><input type="text" class="form-control" id="edit-memory" value="' + memory + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">默认系统ID</span></div><input type="text" class="form-control" id="edit-price" value="' + price + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">默认端口数量</span></div><input type="text" class="form-control" id="edit-osid" value="' + osid + '"></div>'+
+              '<div class="input-group botton-interval"><div class="input-group-prepend"><span class="input-group-text" style="color: #7f8c8d;">产品价格</span></div><input type="text" class="form-control" id="edit-defalutnatport" value="' + defalutnatport + '"></div>',
+        showCancelButton: true,
+        showLoaderOnConfirm: true,
+        background: '#f3f3f3',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '确认修改',
+        cancelButtonText: '取消修改',
+        preConfirm: function(email) {
+          return new Promise(function(resolve, reject) {
+            let username = $('#edit-UserName').val();
+            let password = $('#edit-PassWord').val();
+            let identity = $("#edit-Identity").find("option:selected").val();
+            if(identity == 1) {
+              identity = 'member';
+            } else if(identity == 2) {
+              identity = 'admin';
+            }
+            let deposit = $('#edit-Deposit').val();
+            
+            $.ajax({
+              type: "post",
+              url: apiAddress + 'user/edit',
+              data: {
+                token: tk,
+                id: id,
+                username: username,
+                password: password,
+                identity: identity,
+                deposit: deposit
+              },
+              dataType: 'JSON',
+              complete: () => {
+                $('#userTable').DataTable().ajax.reload();
+                resolve();
+
+              },
+              success: function (data) {
+                
+              },
+            });
+          });
+        },
+      }).then((result) => {
+        if (result.value) {
+          
+        }
+      });
+    }
+  </script>
+  <style>
+    .botton-interval {
+      margin-bottom: 10px;
+    }
+  </style>
+</body>
+</html>
+

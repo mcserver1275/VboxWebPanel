@@ -101,4 +101,21 @@ public class ExampleEntity {
     public void setOsid(int osid) {
         this.osid = osid;
     }
+
+    @Override
+    public String toString() {
+        return "ExampleEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", configureid=" + configureid +
+                ", cputype='" + cputype + '\'' +
+                ", cpuhz='" + cpuhz + '\'' +
+                ", price=" + price +
+                ", cpus=" + cpus +
+                ", cpuexecutioncap=" + cpuexecutioncap +
+                ", memory=" + memory +
+                ", osid=" + osid +
+                ", defalutnatport=" + defalutnatport +
+                '}';
+    }
 }

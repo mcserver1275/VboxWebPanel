@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云控制台首页</title>
+    <link rel="icon" href="./image/favicon.svg" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="./css/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="../css/style.css" />
     <script type="text/javascript" src="./js/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="./js/bootstrap.js"></script>
     <script type="text/javascript" src="./js/bootstrap-table.js"></script>
@@ -17,8 +17,10 @@
         }
 
         body {
+            height: 100%;
             margin: 0;
             background-color: #F5F5F5;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
 
         .navigation {
@@ -43,9 +45,35 @@
             font-size: 18px; 
         }
 
-        .table > thead > tr > th {
-            color: #555;
+        a:hover {
+            text-decoration: none;
         }
+
+        .server-card {
+            margin: 10px 0px 30px 0px;
+            width: 100%;
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0px 0px 5px 1px #95a5a6;
+        }
+        .server-card .address {
+            margin: 10px 0px 10px 0px;
+        }
+        .server-card .address p {
+            margin: 5px 0px 5px 0;
+        }
+        .server-card .time {
+            font-size: 12px;
+            margin: 0px 0px 0px 0px;
+        }
+
+        .page-header {
+            padding-bottom: 0px !important;
+            margin: 20px 0 20px;
+            border-bottom: 1px solid rgba(0,0,0,.1);
+        }
+
     </style>
     <script type="text/javascript">
         // 公网地址
@@ -55,31 +83,9 @@
         // 用户权限
         var identity;
 
-        webinfo();
-
         $(document).ready(() => {
-            var resourcesTable = $('#resourcesTable');
-            resourcesTable.bootstrapTable({
-                locale: "zh-CN",
-                columns: [{
-                    field: 'exampleId',
-                    title: '实例ID'
-                },{
-                    field: 'ipAddress',
-                    title: 'IP地址'
-                },{
-                    field: 'payment',
-                    title: '付费方式'
-                },{
-                    field: 'exampleStatus',
-                    title: '实例状态'
-                }],
-                formatNoMatches: () => {
-                    return '没有找到资源';
-                }
-            });
-            resourcesTable.bootstrapTable('hideLoading');
-            
+            webinfo();
+
             $('.create').click(() => {
                 window.location.href = "./page/create.html";
             });
@@ -98,7 +104,7 @@
                     let state = data.state;
                     let datas = data.data;
                     if(state == 200) {
-                        $('.username').text(data.data.name);
+                        $('.username').text(datas.name);
                         publicip = datas.publicip;
                         serviceregion = datas.serviceregion;
                         identity = datas.identity;
@@ -128,18 +134,81 @@
                     var state = data.state;
                     var datas = data.data;
                     if(state == 200) {
-                        for(var i = 0; i < datas.length; i++) {
-                            state = vmStateFilter(datas[i].state);
-                            $("#resourcesTable").bootstrapTable('insertRow',{index: i, row:{
-                                exampleId: '<a href="./page/manage.html?uuid=' + datas[i].vmuuid + '">' + datas[i].vmuuid + '</a>',
-                                ipAddress: publicip,
-                                payment: datas[i].payment,
-                                exampleStatus: state
-                            }});
+                        if(datas.length > 0) {
+                            $('.emptyTips').css({
+                                display: 'none'
+                            });
+                            for(var i = 0; i < datas.length; i++) {
+                                createCard(datas[i]);
+                            }
                         }
+                        
                     }
                 }
             });
+        }
+
+        // 创建资源显示卡片
+        function createCard(data) {
+            let cpus = data.cpu;
+            let memory = data.memory;
+            let name = data.name;
+            let intranetip = data.intranetip;
+            let vmuuid = data.vmuuid;
+            let time = data.time;
+            let vmstate = data.vmstate;
+            
+            if(intranetip === '' || intranetip == undefined) {
+                intranetip = '-';
+            }
+            let color = '#7f8c8d';
+            if(vmstate === 'expire') {
+                color = '#e74c3c';
+            }
+
+            let serverCard = $(`
+                <div class="col-md-6 col-lg-4">
+                    <div class="server-card">
+                        <div class="row">
+                            <div class="col-xs-8">
+                                实例名: <span>` + name + `</span>
+                            </div>
+                            <div class="col-xs-4">
+                                <div class="pull-right">
+                                    <i class="` + vmStateFilterIcon(vmstate) + `"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <h5 class="page-header"></h5>
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <img src="image/cpu.png" width="24px">
+                                <span>` + cpus + `V CPU</span>
+                            </div>
+                            <div class="col-xs-6">
+                                <img src="image/ram.png" width="24px">
+                                <span>` + memory + `MB 内存</span>
+                            </div>
+                        </div>
+                        <div class="address">
+                            <p>公网IP: ` + publicip + `</p>
+                            <p>内网IP: ` + intranetip + `</p>
+                        </div>
+                        <h5 class="page-header"></h5>
+                            <p style="color: ` + color + `" class="time">到期时间: ` + getTime(time) + (vmstate !== 'expire' ? '' : " (服务到期)") + `</p>
+                        <h5 class="page-header"></h5>
+                        <a href="./page/manage.html?uuid=` + vmuuid + `">
+                            <button type="button" class="btn btn-primary">控制面板</button>
+                        </a>
+                    </div>
+                <div>
+            `);
+
+            $('.info-frame .serverList').append(serverCard);
+        }
+
+        function state() {
+
         }
     </script>
 </head>
@@ -154,10 +223,10 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
-                        <li><a href="#">基本资料</a></li>
-                        <li class="adminPage-btn" style="display: none;"><a href="./page/admin/manage.html">后台管理</a></li>
+                        <li><a href="./page/profile.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-user"></span>基本资料</a></li>
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/index.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-edit"></span>后台管理</a></li>
                         <li class="divider"></li>
-                        <li><a href="javascript:void(logout())">注销</a></li>
+                        <li><a href="javascript:void(logout())"><span style="margin-right: 5px;" class="glyphicon glyphicon-log-out"></span>注销</a></li>
                     </ul>
                 </div>
             </div>
@@ -174,16 +243,10 @@
 
         <div class="info-frame">
             <p class="title">我的资源</p>
-            <p class="visible-xs-block" style="color: #7f8c8d;">可左右滑动表格查看信息</p>
-            <div style="overflow-x: auto;">
-                <table id="resourcesTable" class="table table-hover table-responsive" style="min-width:600px;">
-                    <thead>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+            <div class="serverList row">
+                
             </div>
-
+            <p class="emptyTips" style="text-align: center;">暂无资源，<a href="./page/create.html">创建一个!</a></p>
             <button type="button" class="btn btn-default create">创建新实例</button>
         </div>
     </div>

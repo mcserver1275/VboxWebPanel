@@ -59,8 +59,42 @@ function vmStateFilter(vmstate) {
         case 'create' :
             state = '<span style="color: #e67e22;">正在创建</span>';
             break;
+        case 'expire' :
+            state = '<span style="color: #e74c3c;">服务到期</span>';
+            break;
+        case undefined :
+            state = '<span style="color: #e74c3c;">机器不存在</span>';
+            break;
         default :
         state = '<span style="color: #e74c3c;">关机</span>';
+    }
+    return state;
+}
+
+// 虚拟机电源状态过滤图标
+function vmStateFilterIcon(vmstate) {
+    let state;
+    switch(vmstate) {
+        case 'poweroff' :
+            state = 'glyphicon glyphicon-play';
+            break;
+        case 'starting' :
+            state = 'glyphicon glyphicon-refresh';
+            break;
+        case 'running' :
+            state = 'glyphicon glyphicon-pause';
+            break;
+        case 'create' :
+            state = 'glyphicon glyphicon-refresh';
+            break;
+        case 'expire' :
+            state = 'glyphicon glyphicon-warning-sign';
+            break;
+        case undefined :
+            state = 'glyphicon glyphicon-ban-circle';
+            break;
+        default :
+            state = 'glyphicon glyphicon-play';
     }
     return state;
 }

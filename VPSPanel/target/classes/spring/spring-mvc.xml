@@ -14,6 +14,7 @@
     <context:component-scan base-package="win.simple.controller" />
     <context:component-scan base-package="win.simple.serivce.impl" />
     <context:component-scan base-package="win.simple.util" />
+    <context:component-scan base-package="plugin" />
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
@@ -24,14 +25,20 @@
         </property>
     </bean>
 
-    <!--系统盘克隆检查类，防止克隆的时候重启后端导致克隆到一半，无法开机问题-->
-    <bean class="win.simple.util.InspectStoragectl"></bean>
+    <bean class="win.simple.VmInfo" />
+    <bean class="win.simple.VmControl" />
+    <bean class="win.simple.VmModify" />
+    <bean class="win.simple.VmPower" />
+    <bean class="win.simple.VmStoragectl" />
+    <bean class="win.simple.VmGuestControl" />
+    <bean class="win.simple.VmBuild" />
+    <bean class="win.simple.util.execption.GlobalExceptionHandler" />
 
     <!-- 将静态资源交由默认的servlet处理 -->
     <mvc:default-servlet-handler/>
 
     <!-- 将SwaggerConfig配置类注入 -->
-    <bean class="win.simple.config.SwaggerConfig"/>
+    <bean class="win.simple.util.config.SwaggerConfig"/>
     <mvc:resources location="classpath:/META-INF/resources/" mapping="swagger-ui.html"/>
     <mvc:resources location="classpath:/META-INF/resources/webjars/" mapping="/webjars/**"/>
 

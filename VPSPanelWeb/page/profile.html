@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <link rel="icon" href="../image/favicon.svg" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+    <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.js"></script>
+    <script type="text/javascript" src="../js/bootstrap-table.js"></script>
+    <script type="text/javascript" src="../js/function.js"></script>
+
+    <script>
+        $(document).ready(() => {
+            // 获取web信息
+            webinfo();
+
+            $('.recharge-btn').click(() => {
+                let code = $('.recharge-code').val();
+                if(code !== '') {
+                    $.ajax({
+                        url: apiAddress + 'user/userechargecode',
+                        type: 'post',
+                        data: {token: tk, code: code},
+                        success: (data) => {
+                            let state = data.state;
+                            if(data.state == 200) {
+                                $('#rechargeModalLabel').text('充值提示');
+                                $('#recharge-modal-body').html(data.data);
+                                $('.recharge-modal').modal('show');
+                                return;
+                            }
+                            Modal("充值提示", data.msg);
+                        }
+                    });
+                } else {
+                    Modal("充值提示", "充值码不能为空！");
+                }
+            });
+
+            $('.modal-recharge-btn').click(() => {
+                location.reload();
+            });
+        });
+
+        function authorization() {
+            let tk = localStorage.getItem('token');
+
+            $.ajax({
+                url: apiAddress + 'user/authorization',
+                type: 'post',
+                data: {token: tk},
+                complete: () => {
+                    userInfo();
+                },
+                success: (data) => {
+                    let state = data.state;
+                    let datas = data.data;
+                    if(data.state == 200) {
+                        publicip = datas.publicip;
+                        serviceregion = datas.serviceregion;
+                        $('.username').text(data.data.name);
+
+                        if(datas.identity == 'admin') {
+                            $('.adminPage-btn').css({
+                                display: 'block'
+                            });
+                        }
+                    } else {
+                        window.location.href="./login.html";
+                    }
+                }
+            });
+        }
+
+        function userInfo() {
+            $.ajax({
+                url: apiAddress + 'user/userinfo',
+                type: 'post',
+                data: {token: tk},
+                success: (data) => {
+                    let state = data.state;
+                    let datas = data.data;
+                    if(data.state == 200) {
+                        $('.deposit').text(datas.deposit);
+                        $('.examplenumber').text(datas.examplenumber);
+
+                        let identity = '普通用户';
+                        if(datas.identity === 'admin') {
+                            identity = '管理员';
+                        }
+                        $('.identity').text(identity);
+                    }
+                }
+            });
+        }
+    </script>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #F5F5F5;
+            padding-right: 0!important;
+        }
+
+        .navigation {
+            width: 100%;
+            height: 50px;
+            background-color: #FFFFFF;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
+        }
+
+        .info-frame {
+            margin-top: 20px;
+            padding: 20px;
+            width: 100%;
+            height: fit-content;
+            background-color: #FFFFFF;
+            border-radius: 3px;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            overflow: hidden;
+        }
+        .info-frame .title {    
+            font-weight: 600;
+            font-size: 18px; 
+        }
+        .info-frame button {
+            margin-top: 10px;
+            max-width: 110px; 
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <span class="glyphicon glyphicon-chevron-left backHome hidden-xs"></span>
+        <div class="container" style="height: 100%; display: flex; align-items: center;">
+            <a href="/"><img src="../image/logo.png" width="120px" height="40px"/></a>
+            <div style="display: inline; margin-left: auto;">
+                <div class="btn-group personal">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                        <span class="username">^_^</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" role="menu">
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/index.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-edit"></span>后台管理</a></li>
+                        <li class="divider"></li>
+                        <li><a href="javascript:void(logout())"><span style="margin-right: 5px;" class="glyphicon glyphicon-log-out"></span>注销</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style type="text/css">
+        .backHome {
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .backHome:hover {
+            font-size: 20px;
+            color: #2980b9;
+        }
+    </style>
+    <script type="text/javascript">
+        $('.backHome').click(() => {
+            window.location.href="/";
+        });
+    </script>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="dash-card">
+                    <div class="dash-material-icons dash-card-wallet">
+                        <span class="glyphicon glyphicon-euro dash-icon"></span>
+                    </div>
+                    <div class="dash-card-content">
+                        <p class="title">余额</p>
+                        <p class="content"><span class="deposit">0</span><span style="color: #636e72; margin-left: 5px;">CNY</span></p>
+                    </div>
+                    <div class="dash-card-footer">
+                        <div class="operation">
+                            <span class="glyphicon glyphicon-tag"></span>
+                            <a href="#">账户充值</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="dash-card">
+                    <div class="dash-material-icons dash-card-servers">
+                        <span class="glyphicon glyphicon-cloud dash-icon"></span>
+                    </div>
+                    <div class="dash-card-content">
+                        <p class="title">服务器数量</p>
+                        <p class="content"><span class="examplenumber">0</span></p>
+                    </div>
+                    <div class="dash-card-footer">
+                        <div class="operation">
+                            <span class="glyphicon glyphicon-plus-sign"></span>
+                            <a href="./create.html">添加新服务器</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="dash-card">
+                    <div class="dash-material-icons dash-card-user">
+                        <span class="glyphicon glyphicon-user dash-icon"></span>
+                    </div>
+                    <div class="dash-card-content">
+                        <p class="title">用户等级</p>
+                        <p class="content"><span class="identity">-</span></p>
+                    </div>
+                    <div class="dash-card-footer">
+                        <div class="operation">
+                            <span class="glyphicon glyphicon-arrow-up"></span>
+                            <a href="#">提升等级</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="info-frame">
+                    <p class="title">充值码充值</p>
+                    <div class="input-group">
+                        <span class="input-group-addon">充值码</span>
+                        <input type="text" class="form-control recharge-code" placeholder="密钥">
+                    </div>
+                    <button type="button" class="btn btn-default recharge-btn">充值</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 普通提示 - 模态框 -->
+    <div class="modal fade ordinary-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body" id="ordinary-modal-body"> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 充值提示 - 模态框 -->
+    <div class="modal fade recharge-modal" id="rechargeModal" tabindex="-1" role="dialog" aria-labelledby="rechargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="rechargeModalLabel">
+                    </h4>
+                </div>
+                <div class="modal-body" id="recharge-modal-body"> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary modal-btn modal-recharge-btn" data-dismiss="modal">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <style>
+        .dash-card {
+            margin-top: 50px;
+            margin-bottom: 20px;
+            background-color: #FFFFFF;
+            width: 100%;
+            border-radius: 3px;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
+        }
+
+        .dash-material-icons {
+            height: 70px;
+            width: 70px;
+            border-radius: 5px;
+            box-shadow: rgba(0, 0, 0, 0.2) 2px 4px 7px 0px;
+            position: absolute;
+            top: -30px;
+            left: 15px;
+        }
+        .dash-card-wallet {
+            background-color: #2ecc71;
+        }
+        .dash-card-servers {
+            background-color: #9b59b6;
+        }
+        .dash-card-user {
+            background-color: #e74c3c;
+        }
+
+        .dash-icon {
+            font-size: 25px;
+            color: white;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .dash-card-content {
+            padding: 20px 25px 15px 15px;
+            text-align: right;
+            width: 100%;
+            height: 100%;
+        }
+        .dash-card-content .title {
+            margin-bottom: 0;
+            color: #636e72;
+            font-size: 20px; 
+
+        }
+        .dash-card-content .content {
+            font-size: 25px; 
+        }
+
+        .dash-card-footer {
+            margin: 0px 15px 15px 15px;
+            border-top: 1px solid #eeeeee;
+        }
+        .dash-card-footer .operation {
+            padding: 10px 0px 10px 5px;
+        }
+        .dash-card-footer span {
+            margin: 0;
+            font-size: 13px;
+            color: #636e72;
+        }
+        .dash-card-footer a {
+            margin: 0;
+            font-size: 13px;
+            text-decoration: none;
+        }
+    </style>
+    <script src="../js/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="../css/sweetalert2.min.css" id="theme-styles">
+
+</body>
+</html>

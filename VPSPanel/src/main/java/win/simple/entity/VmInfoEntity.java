@@ -1,5 +1,10 @@
 package win.simple.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.List;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VmInfoEntity {
 
     private int cpu;
@@ -16,6 +21,15 @@ public class VmInfoEntity {
     private long createtime;
     private int currcreateprogress = -1;
     private String examplename;
+    private String defalutUserName;
+    private String defalutPassword;
+    private int natport;
+    private float price;
+    private String intranetip;
+    private List<Integer> cpuUtilization;
+    private List<Integer> memoryUtilization;
+    private int portRangeMin;
+    private int portRangeMax;
 
     public int getCpu() {
         return cpu;
@@ -127,5 +141,77 @@ public class VmInfoEntity {
 
     public void setExamplename(String examplename) {
         this.examplename = examplename;
+    }
+
+    public String getDefalutUserName() {
+        return defalutUserName;
+    }
+
+    public void setDefalutUserName(String defalutUserName) {
+        this.defalutUserName = defalutUserName;
+    }
+
+    public String getDefalutPassword() {
+        return defalutPassword;
+    }
+
+    public void setDefalutPassword(String defalutPassword) {
+        this.defalutPassword = defalutPassword;
+    }
+
+    public int getNatport() {
+        return natport;
+    }
+
+    public void setNatport(int natport) {
+        this.natport = natport;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
+
+    public String getIntranetip() {
+        return intranetip;
+    }
+
+    public void setIntranetip(String intranetip) {
+        this.intranetip = intranetip;
+    }
+
+    public List<Integer> getCpuUtilization() {
+        return cpuUtilization;
+    }
+
+    public void setCpuUtilization(List<Integer> cpuUtilization) {
+        this.cpuUtilization = cpuUtilization;
+    }
+
+    public List<Integer> getMemoryUtilization() {
+        return memoryUtilization;
+    }
+
+    public void setMemoryUtilization(List<Integer> memoryUtilization) {
+        this.memoryUtilization = memoryUtilization;
+    }
+
+    public int getPortRangeMin() {
+        return portRangeMin;
+    }
+
+    public void setPortRangeMin(int portRangeMin) {
+        this.portRangeMin = portRangeMin;
+    }
+
+    public int getPortRangeMax() {
+        return portRangeMax;
+    }
+
+    public void setPortRangeMax(int portRangeMax) {
+        this.portRangeMax = portRangeMax;
     }
 }

@@ -12,6 +12,7 @@ function vminfo(uuid) {
             var datas = data.data;
             if(state == 200) {
                 $('.uuid').text(datas.uuid);
+                $('.name').text(datas.name);
                 $('.vmstate').html(vmStateFilter(datas.vmstate));
                 $('.serviceregion').text(serviceregion);
                 $('.exampleName').text(datas.examplename);
@@ -24,6 +25,16 @@ function vminfo(uuid) {
                 $('.time').text(getTime(datas.time));
                 $('.createtime').text(getTime(datas.createtime));
                 
+                $('.defalutUserName').text(datas.defalutUserName);
+                $('.defalutPassword').text(datas.defalutPassword);
+
+                $('.natport').text(datas.natport);
+                $('.portrangemin').text(datas.portRangeMin);
+                $('.portRangeMax').text(datas.portrangemax);
+
+                price = datas.price;
+
+                // 快照预览
                 if(datas.base64Snapshot != null) {
                     $('.img-snapshot').attr('src', 'data:image/png;base64,' + datas.base64Snapshot);
                 } else {
@@ -44,11 +55,64 @@ function vminfo(uuid) {
                     $('.createProgress-info-frame').css({
                         'display': 'none'
                     });
-                    $('.start-btn').removeAttr('disabled', '');
-                    $('.stop-btn').removeAttr('disabled', '');
+                    if(datas.vmstate === 'running' || datas.vmstate === 'starting') {
+                        $('.start-btn').attr('disabled', '');
+                    } else {
+                        $('.start-btn').removeAttr('disabled', '');
+                    }
+                    if(datas.vmstate === 'poweroff') {
+                        $('.stop-btn').attr('disabled', '');
+                    } else {
+                        $('.stop-btn').removeAttr('disabled', '');
+                    }
+                    if(datas.vmstate === 'expire') {
+                        $('.start-btn').attr('disabled', '');
+                        $('.stop-btn').attr('disabled', '');
+                    }
                 }
-                
+
+                // 显示内网IP
+                let intranetip = datas.intranetip;
+                if(intranetip != undefined && intranetip != '') {
+                    $('.intranetIp').text(intranetip);
+                    $('.intranetIp-frame').css({
+                        'display': 'block'
+                    });
+                } else {
+                    $('.intranetIp-frame').css({
+                        'display': 'none'
+                    });
+                }
+
+                // 资源统计图
+                if(datas.cpuUtilization != undefined && datas.memoryUtilization != undefined) {
+                    utilizationChart.setOption({
+                        series: [{
+                            name: 'CPU利用率',
+                            type: 'line',
+                            stack: '总量',
+                            data: datas.cpuUtilization
+                        },
+                        {
+                            name: '内存使用率',
+                            type: 'line',
+                            stack: '总量',
+                            data: datas.memoryUtilization
+                        }]
+                    });
+                    $('.utilization').css({
+                        'display': 'block'
+                    });
+
+                    utilizationChart.resize();
+                } else {
+                    $('.utilization').css({
+                        'display': 'none'
+                    });
+                }
+                return;
             }
+            Modal("资源提示", data.msg);
         }
     });
 }
@@ -63,13 +127,11 @@ function power(type) {
             var state = data.state;
             var datas = data.data;
             if(state == 200) {
-                
-            } else {
-                window.location.href="./login.html";
+                location.reload();
+            } 
+            if(state == 400) {
+                Modal("电源提示", data.msg);
             }
-        },
-        error: (data) => {
-            //alert('无法连接至服务器');
         }
     });
 }
@@ -178,6 +240,23 @@ function changeOs(osId) {
             if(state == 400) {
                 Modal("重装系统提示", data.msg);
             }
+        }
+    });
+}
+
+function resetPassword(password) {
+    $.ajax({
+        url: apiAddress + 'vm/resetPass',
+        type: 'post',
+        data: {token: tk, vmuuid: uuid, password: password},
+        success: (data) => {
+            let state = data.state;
+            let datas = data.data;
+            if(state == 200) {
+                Modal("重置密码提示", "密码修改成功");
+                return;
+            }
+            Modal("重置密码提示", data.msg);
         }
     });
 }

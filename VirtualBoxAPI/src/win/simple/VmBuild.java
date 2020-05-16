@@ -20,8 +20,7 @@ public class VmBuild {
      * @return json
      */
     public String createVm(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage createvm --name " + name + "  --register");
-        String[] datas = start().split("\n");
+        String[] datas = start("VBoxManage createvm --name " + name + "  --register").split("\n");
         JSONObject jsonObject = new JSONObject();
         if(datas.length >= 3) {
             String[] KV = datas[1].split(": ");
@@ -38,12 +37,12 @@ public class VmBuild {
      * @return
      */
     public String deleteVm(String name) {
-        vBoxRuntime = new VBoxRuntime("VBoxManage unregistervm --delete " + name);
-        return start();
+        return start("VBoxManage unregistervm --delete " + name);
     }
 
 
-    private String start() {
+    private String start(String command) {
+        VBoxRuntime vBoxRuntime = new VBoxRuntime(command);
         vBoxRuntime.exec();
         Process process = vBoxRuntime.getProcess();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));

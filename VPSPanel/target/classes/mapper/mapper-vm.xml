@@ -37,7 +37,15 @@
     </delete>
 
     <select id="osList" resultType="win.simple.entity.OsEntity">
-        select * from os
+        select id, ostype, osvdi from os
+    </select>
+
+    <select id="selectDefaultUserNameAndPassword" resultType="win.simple.entity.OsEntity">
+        select defaultusername, defalutpassword from os where id = #{id}
+    </select>
+
+    <select id="selectGuestUserNameAndPassword" resultType="win.simple.entity.OsEntity">
+        select guestusername, guestpassword from os where id = #{id}
     </select>
 
     <select id="selectos" resultType="win.simple.entity.OsEntity">

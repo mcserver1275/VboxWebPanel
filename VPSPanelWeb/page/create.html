@@ -1,27 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创建新实例</title>
+    <link rel="icon" href="../image/favicon.svg" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
     <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/bootstrap-table.js"></script>
     <script type="text/javascript" src="../js/function.js"></script>
     <script>
-        // 获取web信息
-        webinfo();
-
         var payMode = 1;
 
         var currExampleName;
         var currExampleId;
         var examplelistjson;
         var buydate;
-        
 
         $(document).ready(() => {
+            // 获取web信息
+            webinfo();
+
             let choice_pay = $('.choice-pay');
 
             $('.pay-month-btn').click(() => {
@@ -215,10 +215,10 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu pull-right" role="menu">
-                        <li><a href="#">基本资料</a></li>
-                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/manage.html">后台管理</a></li>
+                        <li><a href="./profile.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-user"></span>基本资料</a></li>
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/index.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-edit"></span>后台管理</a></li>
                         <li class="divider"></li>
-                        <li><a href="javascript:void(logout())">注销</a></li>
+                        <li><a href="javascript:void(logout())"><span style="margin-right: 5px;" class="glyphicon glyphicon-log-out"></span>注销</a></li>
                     </ul>
                 </div>
             </div>
@@ -232,6 +232,7 @@
             left: 10px;
             transform: translateY(-50%);
             cursor: pointer;
+            transition: all 0.3s;
         }
         .backHome:hover {
             font-size: 20px;
@@ -245,23 +246,6 @@
     </script>
 
     <div class="container">
-        <div class="info-frame">
-            <p class="title">付费模式</p>
-            <div class="pay">
-                <button type="button" class="btn btn-success pay-month-btn">按月付费</button>
-                <button type="button" class="btn btn-info pay-year-btn">按年付费</button>
-            </div>
-
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">当前选择的模式</h3>
-                </div>
-                <div class="panel-body choice-pay">
-                    月付费
-                </div>
-            </div>
-        </div>
-
         <div class="info-frame">
             <p class="title">实例</p>
             <p class="visible-xs-block" style="color: #7f8c8d;">可左右滑动表格查看信息</p>
@@ -283,6 +267,23 @@
                 </div>
             </div>
 
+        </div>
+
+        <div class="info-frame">
+            <p class="title">付费模式</p>
+            <div class="pay">
+                <button type="button" class="btn btn-success pay-month-btn">按月付费</button>
+                <button type="button" class="btn btn-info pay-year-btn">按年付费</button>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">当前选择的模式</h3>
+                </div>
+                <div class="panel-body choice-pay">
+                    月付费
+                </div>
+            </div>
         </div>
 
         <div class="info-frame">
@@ -326,11 +327,9 @@
                     var datas = data.data;
                     if(state == 200) {
                         window.location.href = "/";
+                        retrun;
                     }
-                    if(state == 400) {
-                        Modal("创建提示", data.msg);
-                    }
-                    
+                    Modal("创建提示", data.msg);
                 },
                 error: (data) => {
                     Modal("创建提示", "购买失败，无法连接服务器，请刷新页面后重试！");

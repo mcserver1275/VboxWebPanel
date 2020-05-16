@@ -1,5 +1,8 @@
 package win.simple.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StateEntity {
 
     private int state;

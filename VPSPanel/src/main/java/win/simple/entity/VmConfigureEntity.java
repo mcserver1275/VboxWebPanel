@@ -1,5 +1,8 @@
 package win.simple.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VmConfigureEntity {
 
     private int id;
@@ -8,14 +11,18 @@ public class VmConfigureEntity {
     private int cpuperformance;
     private String vmuuid;
     private int userid;
-    private String state;
-    private String privateip;
     private String payment;
     private String ostype;
+    private int osid;
     private long time;
     private long createtime;
     private String name;
     private String examplename;
+    private int usestate;
+    private int natport;
+    private String intranetip;
+    private String vmname;
+    private String vmstate;
 
     public int getId() {
         return id;
@@ -65,22 +72,6 @@ public class VmConfigureEntity {
         this.userid = userid;
     }
 
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getPrivateip() {
-        return privateip;
-    }
-
-    public void setPrivateip(String privateip) {
-        this.privateip = privateip;
-    }
-
     public String getPayment() {
         return payment;
     }
@@ -105,6 +96,14 @@ public class VmConfigureEntity {
         this.createtime = createtime;
     }
 
+    public int getOsid() {
+        return osid;
+    }
+
+    public void setOsid(int osid) {
+        this.osid = osid;
+    }
+
     public String getOstype() {
         return ostype;
     }
@@ -127,5 +126,45 @@ public class VmConfigureEntity {
 
     public void setExamplename(String examplename) {
         this.examplename = examplename;
+    }
+
+    public int getUsestate() {
+        return usestate;
+    }
+
+    public void setUsestate(int usestate) {
+        this.usestate = usestate;
+    }
+
+    public int getNatport() {
+        return natport;
+    }
+
+    public void setNatport(int natport) {
+        this.natport = natport;
+    }
+
+    public String getIntranetip() {
+        return intranetip;
+    }
+
+    public void setIntranetip(String intranetip) {
+        this.intranetip = intranetip;
+    }
+
+    public String getVmname() {
+        return vmname;
+    }
+
+    public void setVmname(String vmname) {
+        this.vmname = vmname;
+    }
+
+    public String getVmstate() {
+        return vmstate;
+    }
+
+    public void setVmstate(String vmstate) {
+        this.vmstate = vmstate;
     }
 }

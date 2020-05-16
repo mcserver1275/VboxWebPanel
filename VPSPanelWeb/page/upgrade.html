@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>套餐升级</title>
+    <link rel="icon" href="../image/favicon.svg" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" />
+    <script type="text/javascript" src="../js/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../js/bootstrap.js"></script>
+    <script type="text/javascript" src="../js/bootstrap-table.js"></script>
+
+    <script type="text/javascript" src="../js/function.js"></script>
+    <script type="text/javascript" src="../js/vmfunction.js"></script>
+    <script>
+        var uuid = getQueryVariable("uuid");
+        if(!uuid) {
+            window.location.href="/";
+        }
+
+        $(document).ready(() => {
+            // 获取web信息
+            webinfo();
+        });
+
+        function authorization() {
+            $.ajax({
+                url: apiAddress + 'user/authorization',
+                type: 'post',
+                dataType: 'json',
+                data: {token: tk},
+                complete: () => {
+                    // 获取端口列表
+                    portMapperList();
+                },
+                success: (data) => {
+                    let state = data.state;
+                    let datas = data.data;
+                    if(state == 200) {
+                        publicip = datas.publicip;
+                        serviceregion = datas.serviceregion;
+                        $('.username').text(data.data.name);
+
+                        if(datas.identity == 'admin') {
+                            $('.adminPage-btn').css({
+                                display: 'block'
+                            });
+                        }
+                    } else {
+                        window.location.href="./login.html";
+                    }
+                }
+            });
+        }
+    </script>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #F5F5F5;
+            padding-right: 0!important;
+        }
+        
+        .navigation {
+            width: 100%;
+            height: 50px;
+            background-color: #FFFFFF;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
+        }
+
+        .info-frame {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            width: 100%;
+            height: fit-content;
+            background-color: #FFFFFF;
+            border-radius: 3px;
+            box-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px 0px;
+            position: relative;
+        }
+        .info-frame .title {    
+            font-weight: 600;
+            font-size: 18px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <span class="glyphicon glyphicon-chevron-left backHome hidden-xs"></span>
+        <div class="container" style="height: 100%; display: flex; align-items: center;">
+            <a href="/"><img src="../image/logo.png" width="120px" height="40px"/></a>
+            <div style="display: inline; margin-left: auto;">
+                <div class="btn-group personal">
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                        <span class="username">^_^</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu pull-right" role="menu">
+                        <li><a href="./profile.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-user"></span>基本资料</a></li>
+                        <li class="adminPage-btn" style="display: none;"><a href="../page/admin/index.html"><span style="margin-right: 5px;" class="glyphicon glyphicon-edit"></span>后台管理</a></li>
+                        <li class="divider"></li>
+                        <li><a href="javascript:void(logout())"><span style="margin-right: 5px;" class="glyphicon glyphicon-log-out"></span>注销</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style type="text/css">
+        .backHome {
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .backHome:hover {
+            font-size: 20px;
+            color: #2980b9;
+        }
+    </style>
+    <script type="text/javascript">
+        $('.backHome').click(() => {
+            window.location.href="/";
+        });
+    </script>
+
+    <div class="container">
+        <div class="row">
+            
+        </div>
+    </div>
+</body>
+</html>

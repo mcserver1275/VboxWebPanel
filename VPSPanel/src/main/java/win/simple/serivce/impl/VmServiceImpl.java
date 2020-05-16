@@ -12,6 +12,7 @@ import win.simple.dao.VmDao;
 import win.simple.entity.*;
 import win.simple.serivce.VmService;
 import win.simple.util.Tools;
+import win.simple.util.execption.BusinessException;
 import win.simple.util.thread.CloneStoragectl;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import java.util.List;
 public class VmServiceImpl implements VmService {
 
     @Autowired
+    private UserServiceImpl userService;
+    @Autowired
     private UserDao userDao;
     @Autowired
     private ProductDao productDao;
@@ -29,35 +32,56 @@ public class VmServiceImpl implements VmService {
     private VmDao vmDao;
     @Autowired
     private RedisTemplate redisTemplate;
-
+    @Autowired
+    private VmInfo vmInfo;
+    @Autowired
+    private VmControl vmControl;
+    @Autowired
+    private VmModify vmModify;
+    @Autowired
+    private VmPower vmPower;
+    @Autowired
+    private VmStoragectl vmStoragectl;
+    @Autowired
+    private VmGuestControl vmGuestControl;
 
     @Override
     public StateEntity power(String token, String vmUUID, int type) {
         StateEntity stateEntity = new StateEntity();
-        if(isVmSubordinate(token, vmUUID)) {
+        stateEntity.setState(400);
+
+        if(this.isVmSubordinate(token, vmUUID)) {
             // 检测是不是在克隆磁盘
             CloneStoragectl cloneStoragectl = CloneStoragectl.cloneStoragectlList.get(vmUUID);
             if(null == cloneStoragectl) {
-                stateEntity.setState(200);
-                stateEntity.setMsg("ok");
-                VmPower vmPower = new VmPower();
-                switch (type) {
-                    case 1:
-                        stateEntity.setData(vmPower.startVM(vmUUID));
-                        break;
-                    case 2:
-                        stateEntity.setData(vmPower.powerOff(vmUUID));
-                        break;
-                    case 3:
-                        stateEntity.setData(vmPower.sleepVM(vmUUID));
-                        break;
-                    default:
+                // 检测是否暂停使用
+                Integer useState = productDao.getUseState(vmUUID);
+                if(null != useState) {
+                    if(useState == 1) {
+                        stateEntity.setState(200);
+                        stateEntity.setMsg("ok");
+                        VmPower vmPower = new VmPower();
+                        switch (type) {
+                            case 1:
+                                stateEntity.setData(vmPower.startVM(vmUUID));
+                                break;
+                            case 2:
+                                stateEntity.setData(vmPower.powerOff(vmUUID));
+                                break;
+                            case 3:
+                                stateEntity.setData(vmPower.sleepVM(vmUUID));
+                                break;
+                            default:
 
+                        }
+                        return stateEntity;
+                    } else {
+                        stateEntity.setMsg("你的机器已被暂停使用");
+                        return stateEntity;
+                    }
                 }
-                return stateEntity;
             }
         }
-        stateEntity.setState(400);
         stateEntity.setMsg("你没有权限执行此操作");
         return stateEntity;
     }
@@ -65,7 +89,7 @@ public class VmServiceImpl implements VmService {
     @Override
     public StateEntity portMapperList(String token, String vmUUID) {
         StateEntity stateEntity = new StateEntity();
-        if(isVmSubordinate(token, vmUUID)) {
+        if(this.isVmSubordinate(token, vmUUID)) {
             VmInfo vmInfo = new VmInfo();
             JSONObject VmInfoJSON = new JSONObject(vmInfo.showVmInfo(vmUUID));
 
@@ -102,45 +126,50 @@ public class VmServiceImpl implements VmService {
     public StateEntity addPortMapper(String token, String vmUUID, String name, int agreement, int intranetPort, int externalPort) {
         StateEntity stateEntity = new StateEntity();
         stateEntity.setState(400);
-        if(isVmSubordinate(token, vmUUID)) {
-            // 查询该外网端口是否被占用
-            Integer occupyPortUserId = vmDao.selectOccupyPort(externalPort);
-            if(null == occupyPortUserId) {
-                Integer natPort = productDao.getNatPort(vmUUID);
-                if(null != natPort && natPort > 0) {
-                    Integer portRangeMin = vmDao.portrangemin();
-                    Integer portRangeMax = vmDao.portrangemax();
-                    if(null != portRangeMin && null != portRangeMax) {
-                        if(externalPort >= portRangeMin && externalPort <= portRangeMax) {
-                            String randomName = Tools.getRandomString(4);
-                            if(isVmRunning(vmUUID)) {
-                                VmControl vmControl = new VmControl();
-                                vmControl.addPortMapper(vmUUID, randomName + "_" + name, agreement, intranetPort, externalPort);
+        if(this.isVmSubordinate(token, vmUUID)) {
+            Integer useState = productDao.getUseState(vmUUID);
+            if(null != useState) {
+                if(useState == 1) {
+                    // 查询该外网端口是否被占用
+                    Integer occupyPortUserId = vmDao.selectOccupyPort(externalPort);
+                    if(null == occupyPortUserId) {
+                        Integer natPort = productDao.getNatPort(vmUUID);
+                        if(null != natPort && natPort > 0) {
+                            Integer portRangeMin = vmDao.portrangemin();
+                            Integer portRangeMax = vmDao.portrangemax();
+                            if(null != portRangeMin && null != portRangeMax) {
+                                if(externalPort >= portRangeMin && externalPort <= portRangeMax) {
+                                    String randomName = Tools.getRandomString(4);
+                                    if(isVmRunning(vmUUID)) {
+                                        vmControl.addPortMapper(vmUUID, randomName + "_" + name, agreement, intranetPort, externalPort);
+                                    } else {
+                                        vmModify.addPortMapper(vmUUID, randomName + "_" + name, agreement, intranetPort, externalPort);
+                                    }
+
+                                    String username = (String) redisTemplate.opsForValue().get(token);
+                                    Integer userid = userDao.isExistenceTwo(username);
+                                    vmDao.addOccupyPort(externalPort, userid, randomName + "_" + name);
+
+                                    productDao.setNatPort(vmUUID, natPort - 1);
+
+                                    stateEntity.setState(200);
+                                    stateEntity.setMsg("ok");
+                                    return stateEntity;
+                                } else {
+                                    stateEntity.setMsg("创建失败，你创建的外网端口范围必须在" + portRangeMin + "~" + portRangeMax + "之间");
+                                }
                             } else {
-                                VmModify vmModify = new VmModify();
-                                vmModify.addPortMapper(vmUUID, randomName + "_" + name, agreement, intranetPort, externalPort);
+                                stateEntity.setMsg("端口创建失败，请联系管理员");
                             }
-
-                            String username = (String) redisTemplate.opsForValue().get(token);
-                            Integer userid = userDao.isExistenceTwo(username);
-                            vmDao.addOccupyPort(externalPort, userid, randomName + "_" + name);
-
-                            productDao.setNatPort(vmUUID, natPort - 1);
-
-                            stateEntity.setState(200);
-                            stateEntity.setMsg("ok");
-                            return stateEntity;
                         } else {
-                            stateEntity.setMsg("创建失败，你创建的外网端口范围必须在" + portRangeMin + "~" + portRangeMax + "之间");
+                            stateEntity.setMsg("你无法创建更多的端口了");
                         }
                     } else {
-                        stateEntity.setMsg("端口创建失败，请联系管理员");
+                        stateEntity.setMsg("该外网端口已被占用，请换个外网端口再试");
                     }
                 } else {
-                    stateEntity.setMsg("你无法创建更多的端口了");
+                    stateEntity.setMsg("你的机器已被暂停使用");
                 }
-            } else {
-                stateEntity.setMsg("该外网端口已被占用，请换个外网端口再试");
             }
         } else {
             stateEntity.setMsg("你没有权限执行此操作");
@@ -151,14 +180,12 @@ public class VmServiceImpl implements VmService {
     @Override
     public StateEntity deletePortMapper(String token, String vmUUID, String name) {
         StateEntity stateEntity = new StateEntity();
-        if(isVmSubordinate(token, vmUUID)) {
+        if(this.isVmSubordinate(token, vmUUID)) {
             Integer natPort = productDao.getNatPort(vmUUID);
             if(null != natPort) {
                 if(isVmRunning(vmUUID)) {
-                    VmControl vmControl = new VmControl();
                     vmControl.deletePortMapper(vmUUID, name);
                 } else {
-                    VmModify vmModify = new VmModify();
                     vmModify.deletePortMapper(vmUUID, name);
                 }
                 vmDao.deleteOccupyPort(name);
@@ -176,85 +203,152 @@ public class VmServiceImpl implements VmService {
     @Override
     public StateEntity osList(String token, String vmUUID) {
         StateEntity stateEntity = new StateEntity();
-        if(isVmSubordinate(token, vmUUID)) {
-            stateEntity.setState(200);
-            stateEntity.setMsg("ok");
-            stateEntity.setData(vmDao.osList());
-            return stateEntity;
-        }
         stateEntity.setState(400);
-        stateEntity.setMsg("你没有权限执行此操作");
-        return stateEntity;
+
+        Integer useState = productDao.getUseState(vmUUID);
+        if(null != useState) {
+            if(useState == 1) {
+                if(isVmSubordinate(token, vmUUID)) {
+                    stateEntity.setState(200);
+                    stateEntity.setMsg("ok");
+                    stateEntity.setData(vmDao.osList());
+                    return stateEntity;
+                }
+            } else {
+                throw new BusinessException("你的机器已被暂停使用", 403);
+            }
+        }
+        throw new BusinessException("你没有权限执行此操作", 403);
     }
 
     @Override
     public StateEntity changeOs(String token, String vmUUID, int osId) {
         StateEntity stateEntity = new StateEntity();
-        if(isVmSubordinate(token, vmUUID)) {
-            if(!isVmRunning(vmUUID)) {
-                OsEntity osEntity = vmDao.selectos(osId);
-                CloneStoragectl cloneStoragectl = CloneStoragectl.cloneStoragectlList.get(vmUUID);
-                if(null == cloneStoragectl) {
-                    if(null != osEntity) {
-                        VmInfo vmInfo = new VmInfo();
-                        JSONObject VmInfoJSON = new JSONObject(vmInfo.showVmInfo(vmUUID));
-                        String vmName = VmInfoJSON.getString("name");
+        stateEntity.setState(400);
+        if(this.isVmSubordinate(token, vmUUID)) {
+            // 使用状态判断
+            Integer useState = productDao.getUseState(vmUUID);
+            if(null != useState) {
+                if(useState == 1) {
+                    if(!isVmRunning(vmUUID)) {
+                        // 关闭虚拟机电源（虽然已经关了，为了保险）
+                        vmPower.powerOff(vmUUID);
 
-                        VmStoragectl vmStoragectl = new VmStoragectl();
-                        vmStoragectl.cancelStorageattach(vmUUID, "sata", 0);
-                        vmStoragectl.deleteStorageattach(vmDao.dataPath() + "VirtualBox VMs\\" + vmName + "\\" + vmName + ".vdi");
+                        OsEntity osEntity = vmDao.selectos(osId);
+                        CloneStoragectl cloneStoragectl = CloneStoragectl.cloneStoragectlList.get(vmUUID);
+                        if(null == cloneStoragectl) {
+                            if(null != osEntity) {
+                                JSONObject VmInfoJSON = new JSONObject(vmInfo.showVmInfo(vmUUID));
+                                if(VmInfoJSON.length() == 0) {
+                                    stateEntity.setMsg("机器不存在");
+                                    return stateEntity;
+                                }
+                                String vmName = VmInfoJSON.getString("name");
 
-                        VmModify vmModify = new VmModify();
-                        vmModify.setOsType(vmUUID, osEntity.getOstype());
+                                vmStoragectl.cancelStorageattach(vmUUID, "sata", 0);
+                                vmStoragectl.deleteStorageattach(vmDao.dataPath() + "VirtualBox VMs\\" + vmName + "\\" + vmName + ".vdi");
 
-                        addClone(vmUUID, osEntity.getOsvdi(), vmDao.dataPath() + "VirtualBox VMs\\" + vmName + "\\" + vmName + ".vdi");
+                                vmModify.setOsType(vmUUID, osEntity.getOstype());
 
-                        stateEntity.setState(200);
-                        stateEntity.setMsg("ok");
-                        return stateEntity;
+                                productDao.setConfigureOsId(vmUUID, osId);
+
+                                addClone(vmUUID, osEntity.getOsvdi(), vmDao.dataPath() + "VirtualBox VMs\\" + vmName + "\\" + vmName + ".vdi");
+
+                                stateEntity.setState(200);
+                                stateEntity.setMsg("ok");
+                                return stateEntity;
+                            } else {
+                                stateEntity.setMsg("没有找到此系统");
+                            }
+                        } else {
+                            stateEntity.setMsg("正在创建系统中，无法执行此操作");
+                        }
                     } else {
-                        stateEntity.setMsg("没有找到此系统");
+                        stateEntity.setMsg("请关闭服务器后在重装系统");
                     }
                 } else {
-                    stateEntity.setMsg("正在创建系统中，无法执行此操作");
+                    stateEntity.setMsg("你的机器已被暂停使用");
                 }
-            } else {
-                stateEntity.setMsg("请关闭服务器后在重装系统");
             }
         } else {
             stateEntity.setMsg("你没有权限执行此操作");
         }
+        return stateEntity;
+    }
+
+    @Override
+    public StateEntity resetPass(String token, String vmUUID, String password) {
+        StateEntity stateEntity = new StateEntity();
         stateEntity.setState(400);
+        if(this.isVmSubordinate(token, vmUUID)) {
+            // 使用状态判断
+            Integer useState = productDao.getUseState(vmUUID);
+            if(null != useState) {
+                if(useState == 1) {
+                    if(isVmRunning(vmUUID)) {
+                        JSONObject infoJSON = new JSONObject(vmInfo.showVmInfo(vmUUID));
+                        if(infoJSON.length() == 0) {
+                            stateEntity.setMsg("机器不存在");
+                            return stateEntity;
+                        }
+
+                        String osType = infoJSON.getString("ostype").toUpperCase();
+                        VmGuestControl vmGuestControl = new VmGuestControl();
+
+
+                        VmConfigureEntity vmConfigureEntity = productDao._configure(vmUUID);
+                        OsEntity osEntity = vmDao.selectGuestUserNameAndPassword(vmConfigureEntity.getOsid());
+
+
+                        String execStr = "";
+                        String guestUserName = osEntity.getGuestusername();
+                        String guestPassWord = osEntity.getGuestpassword();
+                        if(osType.contains("WINDOWS")) {
+                            execStr = vmGuestControl.exec(vmUUID, guestUserName, guestPassWord, "cmd.exe", "cmd /c net user Administrator " + password);
+                        } else if(osType.contains("CENTOS")) {
+                            execStr = vmGuestControl.exec(vmUUID,  guestUserName, guestPassWord, "/bin/sh", "sh /bin/resetpass.sh " + password);
+                        } else {
+                            execStr = vmGuestControl.exec(vmUUID,  guestUserName, guestPassWord, "/bin/sh", "sh /bin/resetpass.sh " + password);
+                        }
+
+                        if(!"".equals(execStr)) {
+                            stateEntity.setState(200);
+                            stateEntity.setMsg("ok");
+                        } else {
+                            stateEntity.setMsg("修改失败");
+                        }
+
+
+                        return stateEntity;
+
+                    } else {
+                        stateEntity.setMsg("请开启服务器后在修改密码");
+                    }
+                } else {
+                    stateEntity.setMsg("你的机器已被暂停使用");
+                }
+            }
+        } else {
+            stateEntity.setMsg("你没有权限执行此操作");
+        }
         return stateEntity;
     }
 
 
-    /**
-     * 判断该虚拟机是否属于该用户
-     * @param token
-     * @param vmUUID
-     * @return
-     */
+    @Override
     public boolean isVmSubordinate(String token, String vmUUID) {
-        String username = (String) redisTemplate.opsForValue().get(token);
-        if(null != username) {
-            Integer inspectUserId = userDao.isExistenceTwo(username);
-            if (null != inspectUserId) {
-                Integer requestUserId = productDao.vmOwner(vmUUID);
-                // 检查请求的用户ID和虚拟机所属者的ID是否一致
-                if(null != requestUserId && requestUserId.equals(inspectUserId)) {
-                    return true;
-                }
+        UserEntity userEntity = userService.isUserLogin(token);
+        if(null != userEntity) {
+            Integer requestUserId = productDao.vmOwner(vmUUID);
+            // 检查请求的用户ID和虚拟机所属者的ID是否一致
+            if(null != requestUserId && requestUserId.equals(userEntity.getId())) {
+                return true;
             }
         }
         return false;
     }
 
-    /**
-     * 检查指定虚拟机是否运行
-     * @param vmUUID
-     * @return
-     */
+    @Override
     public boolean isVmRunning(String vmUUID) {
         VmInfo vmInfo = new VmInfo();
         JSONObject runningVmsJsonObject = new JSONObject(vmInfo.runningVms());
@@ -276,33 +370,28 @@ public class VmServiceImpl implements VmService {
     }
 
     @Override
-    public VmConfigureEntity getVmInfo(int configureid) {
-        VmConfigureEntity vmConfigureEntity = productDao.configure(configureid);
-        if(null != vmConfigureEntity) {
-            VmInfo vmInfo = new VmInfo();
-            String vmUuid = vmConfigureEntity.getVmuuid();
-
-            JSONObject VmInfoJson = new JSONObject(vmInfo.showVmInfo(vmUuid));
-            vmConfigureEntity.setCpu(Integer.parseInt(VmInfoJson.getString("cpus")));
-            vmConfigureEntity.setMemory(Integer.parseInt(VmInfoJson.getString("memory")));
-            vmConfigureEntity.setCpuperformance(Integer.parseInt(VmInfoJson.getString("cpuexecutioncap")));
-            vmConfigureEntity.setOstype(VmInfoJson.getString("ostype"));
-            vmConfigureEntity.setName(VmInfoJson.getString("name"));
-
-            return vmConfigureEntity;
+    public String getIntranetIp(String vmUuid) {
+        // 查询内网IP（虚拟机必须安装增强）
+        JSONArray jsonGuestPropertys = new JSONObject(vmGuestControl.guestProperty(vmUuid)).getJSONArray("guestproperty");
+        String intranetIP = "";
+        for(int i = 0; i < jsonGuestPropertys.length(); i++) {
+            JSONObject jsonGuestProperty = jsonGuestPropertys.getJSONObject(i);
+            if(jsonGuestProperty.length() >= 2) {
+                if("/VirtualBox/GuestInfo/Net/0/V4/IP".equals(jsonGuestProperty.getString("Name"))) {
+                    intranetIP = jsonGuestProperty.getString("value");
+                }
+            }
+        }
+        if(!"".equals(intranetIP)) {
+            return intranetIP;
         }
         return null;
     }
 
-    /**
-     * 添加磁盘克隆
-     * @param cloneDivFilePath
-     * @param ResultFilePath
-     */
     @Override
     public void addClone(String uuid, String cloneDivFilePath, String ResultFilePath) {
         redisTemplate.opsForValue().set("vm/" + uuid + "/clonediv", "true");
-        new CloneStoragectl().exec(uuid, cloneDivFilePath, ResultFilePath, redisTemplate);
+        new CloneStoragectl().exec(uuid, cloneDivFilePath, ResultFilePath, redisTemplate, vmPower);
     }
 
 }
